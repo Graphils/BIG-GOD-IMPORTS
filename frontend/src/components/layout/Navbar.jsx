@@ -34,7 +34,18 @@ export default function Navbar() {
 
   return (
     <>
-      <div className="announcement-bar">Free delivery on orders above GHS 500 across Ghana</div>
+      <div className="announcement-bar">
+        <div className="announcement-track">
+          <span>✦ Quality Imports Delivered Across Ghana</span>
+          <span>✦ Secure Payments via Paystack</span>
+          <span>✦ Shop Available &amp; Pre-Order Items</span>
+          <span>✦ WhatsApp Us: 0204069997</span>
+          <span>✦ Quality Imports Delivered Across Ghana</span>
+          <span>✦ Secure Payments via Paystack</span>
+          <span>✦ Shop Available &amp; Pre-Order Items</span>
+          <span>✦ WhatsApp Us: 0204069997</span>
+        </div>
+      </div>
       <header className={`navbar${scrolled ? ' scrolled' : ''}`}>
         <div className="container navbar-inner">
           <Link to="/" className="navbar-logo">

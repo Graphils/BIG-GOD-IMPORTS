@@ -97,33 +97,35 @@ export default function Checkout() {
             <div className="form-group"><label>Street Address *</label><input name="street" value={address.street} onChange={handleAddressChange} placeholder="House number, street name" required /></div>
             <div className="form-row">
               <div className="form-group"><label>City *</label><input name="city" value={address.city} onChange={handleAddressChange} required /></div>
-              <div className="form-group">
-                <label>Region {isAllPreOrder ? '' : '*'}</label>
-                <select name="region" value={address.region} onChange={handleAddressChange} required={!isAllPreOrder}>
-                  <option value="">Select region</option>
-                  {REGIONS.map(r => (
-                    <option key={r} value={r}>
-                      {r}{!isAllPreOrder && deliveryFees[r] !== undefined ? ` — GHS ${deliveryFees[r].toFixed(2)}` : ''}
-                    </option>
-                  ))}
-                </select>
-                {!isAllPreOrder && address.region && shippingCost > 0 && (
-                  <p style={{fontSize:'13px',color:'var(--gold)',marginTop:'6px',fontWeight:'600'}}>
-                    📦 Delivery to {address.region}: GHS {shippingCost.toFixed(2)}
-                  </p>
-                )}
-                {!isAllPreOrder && address.region && shippingCost === 0 && (
-                  <p style={{fontSize:'13px',color:'#1a7a4a',marginTop:'6px',fontWeight:'600'}}>
-                    🎉 Free delivery to {address.region}!
-                  </p>
-                )}
-                {isAllPreOrder && (
-                  <p style={{fontSize:'13px',color:'#6a1b9a',marginTop:'6px',fontWeight:'600'}}>
-                    📦 No delivery fee — price includes shipping.
-                  </p>
-                )}
-              </div>
+              {!isAllPreOrder && (
+                <div className="form-group">
+                  <label>Region *</label>
+                  <select name="region" value={address.region} onChange={handleAddressChange} required>
+                    <option value="">Select region</option>
+                    {REGIONS.map(r => (
+                      <option key={r} value={r}>
+                        {r}{deliveryFees[r] !== undefined ? ` — GHS ${deliveryFees[r].toFixed(2)}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {address.region && shippingCost > 0 && (
+                    <p style={{fontSize:'13px',color:'var(--gold)',marginTop:'6px',fontWeight:'600'}}>
+                      📦 Delivery to {address.region}: GHS {shippingCost.toFixed(2)}
+                    </p>
+                  )}
+                  {address.region && shippingCost === 0 && (
+                    <p style={{fontSize:'13px',color:'#1a7a4a',marginTop:'6px',fontWeight:'600'}}>
+                      🎉 Free delivery to {address.region}!
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
+            {isAllPreOrder && (
+              <div style={{background:'#f3e5f5',border:'1px solid #ce93d8',borderRadius:'var(--radius)',padding:'12px 14px',marginTop:'4px'}}>
+                <p style={{fontSize:'13px',color:'#6a1b9a',fontWeight:'600'}}>📦 Delivery included — no extra fee for pre-order items.</p>
+              </div>
+            )}
           </div>
 
           <div className="checkout-section">

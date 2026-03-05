@@ -180,6 +180,9 @@ input, select, textarea { font-family: var(--font-body); outline: none; }
 .empty-state p { color: var(--text-light); margin-bottom: 24px; }
 
 /* ANNOUNCEMENT BAR */
-.announcement-bar { background: var(--navy); color: var(--gold); text-align: center; padding: 10px; font-size: 13px; letter-spacing: 1px; font-weight: 500; }
+.announcement-bar { background: var(--navy); color: var(--gold); padding: 9px 0; font-size: 12px; letter-spacing: 1px; font-weight: 600; overflow: hidden; white-space: nowrap; }
+.announcement-track { display: inline-flex; gap: 48px; animation: marquee 28s linear infinite; }
+.announcement-track span { flex-shrink: 0; }
+@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
 .badge-preorder { background: #6a1b9a; color: #ffffff; border: none; font-size: 12px; font-weight: 800; letter-spacing: 1.5px; padding: 5px 12px; text-transform: uppercase; box-shadow: 0 2px 8px rgba(106,27,154,0.4); }
