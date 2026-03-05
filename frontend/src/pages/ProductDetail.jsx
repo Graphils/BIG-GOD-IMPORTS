@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import api from '../utils/api';
 import { useCart } from '../context/CartContext';
+import { usePreOrderCart } from '../context/PreOrderCartContext';
 import { useAuth } from '../context/AuthContext';
 
 export default function ProductDetail() {
@@ -14,6 +15,7 @@ export default function ProductDetail() {
   const [mainImg, setMainImg] = useState('');
   const [wishlisted, setWishlisted] = useState(false);
   const { addToCart } = useCart();
+  const { addToCart: addToPreOrderCart } = usePreOrderCart();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -26,7 +28,15 @@ export default function ProductDetail() {
 
   const handleAddToCart = async () => {
     if (!user) { toast.error('Please sign in.'); return; }
-    try { await addToCart(product._id, qty); toast.success(`${qty} item${qty>1?'s':''} added to cart!`); } catch { toast.error('Failed.'); }
+    try {
+      if (product.isPreOrder) {
+        await addToPreOrderCart(product._id, qty);
+        toast.success('Added to pre-order cart!');
+      } else {
+        await addToCart(product._id, qty);
+        toast.success(`${qty} item${qty>1?'s':''} added to cart!`);
+      }
+    } catch { toast.error('Failed.'); }
   };
 
   const toggleWishlist = async () => {

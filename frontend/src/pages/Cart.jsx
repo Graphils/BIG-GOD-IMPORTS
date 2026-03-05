@@ -54,11 +54,7 @@ export default function Cart() {
           <div className="summary-row"><span>Shipping</span><span>Calculated at checkout</span></div>
           <div className="summary-divider"></div>
           <div className="summary-row summary-total"><span>Estimated Total</span><span>GHS {cartTotal.toFixed(2)}</span></div>
-          <button className="btn btn-gold" style={{width:'100%',marginTop:'24px'}} onClick={() => {
-            const items = cart?.items?.filter(i => i.product) || [];
-            const allPreOrder = items.length > 0 && items.every(i => i.product?.isPreOrder);
-            navigate(allPreOrder ? '/pre-order-checkout' : '/checkout');
-          }}>Proceed to Checkout</button>
+          <button className="btn btn-gold" style={{width:'100%',marginTop:'24px'}} onClick={() => navigate('/checkout')}>Proceed to Checkout</button>
           <Link to="/shop" className="btn btn-outline" style={{width:'100%',marginTop:'12px',display:'flex'}}>Continue Shopping</Link>
         </div>
       </div>

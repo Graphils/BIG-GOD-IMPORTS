@@ -49,3 +49,6 @@
 
 .preorder-link { color: #ce93d8 !important; }
 .preorder-link.active, .preorder-link:hover { color: #6a1b9a !important; }
+
+.preorder-cart-btn { color: #6a1b9a; }
+.preorder-badge { background: #6a1b9a !important; }

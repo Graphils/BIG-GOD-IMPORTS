@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useCart } from '../../context/CartContext';
+import { usePreOrderCart } from '../../context/PreOrderCartContext';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import './ProductCard.css';
 
 export default function ProductCard({ product, onWishlistToggle, isWishlisted }) {
   const { addToCart } = useCart();
+  const { addToCart: addToPreOrderCart } = usePreOrderCart();
   const { user } = useAuth();
   const [adding, setAdding] = useState(false);
   const [wishlisted, setWishlisted] = useState(isWishlisted || false);
@@ -20,8 +22,13 @@ export default function ProductCard({ product, onWishlistToggle, isWishlisted })
     if (isUnavailable) return;
     setAdding(true);
     try {
-      await addToCart(product._id, 1);
-      toast.success(product.isPreOrder ? 'Pre-order added to cart!' : 'Added to cart!');
+      if (product.isPreOrder) {
+        await addToPreOrderCart(product._id, 1);
+        toast.success('Added to pre-order cart!');
+      } else {
+        await addToCart(product._id, 1);
+        toast.success('Added to cart!');
+      }
     } catch (err) {
       toast.error('Failed to add to cart.');
     } finally { setAdding(false); }

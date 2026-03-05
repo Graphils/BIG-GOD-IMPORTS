@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { useCart } from '../context/CartContext';
+import { usePreOrderCart } from '../context/PreOrderCartContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import './Checkout.css';
@@ -15,7 +15,7 @@ const PAYMENT_METHODS = [
 ];
 
 export default function PreOrderCheckout() {
-  const { cart, cartTotal } = useCart();
+  const { cart, cartTotal, clearCart } = usePreOrderCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState('card');

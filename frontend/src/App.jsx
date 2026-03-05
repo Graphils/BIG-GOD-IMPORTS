@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { PreOrderCartProvider } from './context/PreOrderCartContext';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 
@@ -29,6 +30,7 @@ const AdminUsers = lazy(() => import('./pages/admin/Users'));
 const AdminDeliveryFees = lazy(() => import('./pages/admin/DeliveryFees'));
 const PreOrder = lazy(() => import('./pages/PreOrder'));
 const PreOrderCheckout = lazy(() => import('./pages/PreOrderCheckout'));
+const PreOrderCartPage = lazy(() => import('./pages/PreOrderCartPage'));
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -54,6 +56,7 @@ function AppLayout() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/pre-order" element={<PreOrder />} />
             <Route path="/pre-order-checkout" element={<ProtectedRoute><PreOrderCheckout /></ProtectedRoute>} />
+            <Route path="/pre-order-cart" element={<ProtectedRoute><PreOrderCartPage /></ProtectedRoute>} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
