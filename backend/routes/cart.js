@@ -5,7 +5,7 @@ const { protect } = require('../middleware/auth');
 
 router.get('/', protect, async (req, res) => {
   try {
-    const cart = await Cart.findOne({ user: req.user._id }).populate('items.product','name price images stock stockStatus');
+    const cart = await Cart.findOne({ user: req.user._id }).populate('items.product','name price images stock stockStatus isPreOrder expectedDate');
     res.json({ success: true, cart: cart || { items: [] } });
   } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
 });
@@ -19,7 +19,7 @@ router.post('/add', protect, async (req, res) => {
     if (idx > -1) cart.items[idx].quantity += quantity;
     else cart.items.push({ product: productId, quantity });
     await cart.save();
-    await cart.populate('items.product','name price images stock stockStatus');
+    await cart.populate('items.product','name price images stock stockStatus isPreOrder expectedDate');
     res.json({ success: true, cart });
   } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
 });
@@ -35,14 +35,14 @@ router.put('/update', protect, async (req, res) => {
       else cart.items[idx].quantity = quantity;
     }
     await cart.save();
-    await cart.populate('items.product','name price images stock stockStatus');
+    await cart.populate('items.product','name price images stock stockStatus isPreOrder expectedDate');
     res.json({ success: true, cart });
   } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
 });
 
 router.delete('/remove/:productId', protect, async (req, res) => {
   try {
-    const cart = await Cart.findOneAndUpdate({ user: req.user._id }, { $pull: { items: { product: req.params.productId } } }, { new: true }).populate('items.product','name price images stock stockStatus');
+    const cart = await Cart.findOneAndUpdate({ user: req.user._id }, { $pull: { items: { product: req.params.productId } } }, { new: true }).populate('items.product','name price images stock stockStatus isPreOrder expectedDate');
     res.json({ success: true, cart });
   } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
 });
