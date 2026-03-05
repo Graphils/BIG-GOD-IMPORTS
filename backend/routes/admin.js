@@ -79,7 +79,7 @@ router.get('/products', async (req, res) => {
 
 router.post('/products', upload.array('images', 5), async (req, res) => {
   try {
-    const { name, description, shortDescription, price, comparePrice, category, subcategory, brand, stock, lowStockThreshold, tags, isFeatured, weight } = req.body;
+    const { name, description, shortDescription, price, comparePrice, category, subcategory, brand, stock, lowStockThreshold, tags, isFeatured, weight, isPreOrder, preOrderNote, expectedDate } = req.body;
     if (!name || !price || !category || !description) return res.status(400).json({ success: false, message: 'Name, price, category, description required.' });
     const images = [];
     if (req.files && req.files.length) {
@@ -94,7 +94,9 @@ router.post('/products', upload.array('images', 5), async (req, res) => {
       name, description, shortDescription, price: Number(price), comparePrice: comparePrice ? Number(comparePrice) : undefined,
       category, subcategory, brand, images, stock: Number(stock)||0,
       lowStockThreshold: Number(lowStockThreshold)||5, tags: tags ? tags.split(',').map(t=>t.trim()) : [],
-      isFeatured: isFeatured === 'true', weight: weight ? Number(weight) : undefined, slug, sku
+      isFeatured: isFeatured === 'true', weight: weight ? Number(weight) : undefined,
+      isPreOrder: isPreOrder === 'true', preOrderNote: preOrderNote || '', expectedDate: expectedDate || '',
+      slug, sku
     });
     res.status(201).json({ success: true, product });
   } catch (err) {
@@ -111,6 +113,8 @@ router.put('/products/:id', upload.array('images', 5), async (req, res) => {
     if (updates.price) updates.price = Number(updates.price);
     if (updates.stock !== undefined) updates.stock = Number(updates.stock);
     if (updates.tags && typeof updates.tags === 'string') updates.tags = updates.tags.split(',').map(t=>t.trim());
+    if (updates.isFeatured !== undefined) updates.isFeatured = updates.isFeatured === 'true' || updates.isFeatured === true;
+    if (updates.isPreOrder !== undefined) updates.isPreOrder = updates.isPreOrder === 'true' || updates.isPreOrder === true;
     if (req.files && req.files.length) {
       const newImages = [];
       for (let i = 0; i < req.files.length; i++) {
