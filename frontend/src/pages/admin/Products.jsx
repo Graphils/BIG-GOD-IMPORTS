@@ -8,7 +8,8 @@ const GHANA_CATEGORIES = ['Electronics','Fashion & Clothing','Home & Kitchen','H
 const emptyForm = {
   name: '', description: '', shortDescription: '', price: '', comparePrice: '',
   category: '', brand: '', stock: '', lowStockThreshold: '5', tags: '',
-  isFeatured: false, weight: ''
+  isFeatured: false, weight: '',
+  isPreOrder: false, preOrderNote: '', expectedDate: ''
 };
 
 const stockStatusStyle = (status) => ({
@@ -23,7 +24,8 @@ function ProductModal({ product, onClose, onSave }) {
     shortDescription: product.shortDescription || '', price: product.price || '',
     comparePrice: product.comparePrice || '', category: product.category || '',
     brand: product.brand || '', stock: product.stock || '', lowStockThreshold: product.lowStockThreshold || '5',
-    tags: product.tags?.join(', ') || '', isFeatured: product.isFeatured || false, weight: product.weight || ''
+    tags: product.tags?.join(', ') || '', isFeatured: product.isFeatured || false, weight: product.weight || '',
+    isPreOrder: product.isPreOrder || false, preOrderNote: product.preOrderNote || '', expectedDate: product.expectedDate || ''
   } : emptyForm);
   const [images, setImages] = useState([]);
   const [previews, setPreviews] = useState([]);
@@ -137,6 +139,24 @@ function ProductModal({ product, onClose, onSave }) {
             <input type="checkbox" id="isFeatured" name="isFeatured" checked={form.isFeatured} onChange={handleChange} style={{ width: 'auto' }} />
             <label htmlFor="isFeatured" style={{ textTransform: 'none', letterSpacing: '0', cursor: 'pointer' }}>Feature this product on the homepage</label>
           </div>
+
+          {/* Pre-Order */}
+          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <input type="checkbox" id="isPreOrder" name="isPreOrder" checked={form.isPreOrder} onChange={handleChange} style={{ width: 'auto' }} />
+            <label htmlFor="isPreOrder" style={{ textTransform: 'none', letterSpacing: '0', cursor: 'pointer' }}>This is a Pre-Order product</label>
+          </div>
+          {form.isPreOrder && (
+            <div className="admin-product-form">
+              <div className="form-group">
+                <label>Expected Delivery Date</label>
+                <input name="expectedDate" value={form.expectedDate} onChange={handleChange} placeholder="e.g. 2-3 weeks, March 2025" />
+              </div>
+              <div className="form-group">
+                <label>Pre-Order Note for Customers</label>
+                <input name="preOrderNote" value={form.preOrderNote} onChange={handleChange} placeholder="e.g. Order now and receive once stock arrives" />
+              </div>
+            </div>
+          )}
 
           {/* Image Upload */}
           <div className="form-group">

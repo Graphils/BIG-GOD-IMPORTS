@@ -20,6 +20,9 @@ const productSchema = new mongoose.Schema({
   tags: [String],
   isFeatured: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },
+  isPreOrder: { type: Boolean, default: false },
+  preOrderNote: { type: String, default: '' },
+  expectedDate: { type: String, default: '' },
   ratings: {
     average: { type: Number, default: 0, min: 0, max: 5 },
     count: { type: Number, default: 0 }

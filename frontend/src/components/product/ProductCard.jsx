@@ -12,19 +12,19 @@ export default function ProductCard({ product, onWishlistToggle, isWishlisted })
   const [adding, setAdding] = useState(false);
   const [wishlisted, setWishlisted] = useState(isWishlisted || false);
 
+  const isUnavailable = product.stockStatus === 'out_of_stock' && !product.isPreOrder;
+
   const handleAddToCart = async (e) => {
     e.preventDefault();
     if (!user) { toast.error('Please sign in to add items to cart.'); return; }
-    if (product.stockStatus === 'out_of_stock') return;
+    if (isUnavailable) return;
     setAdding(true);
     try {
       await addToCart(product._id, 1);
-      toast.success('Added to cart!');
+      toast.success(product.isPreOrder ? 'Pre-order added to cart!' : 'Added to cart!');
     } catch (err) {
       toast.error('Failed to add to cart.');
-    } finally {
-      setAdding(false);
-    }
+    } finally { setAdding(false); }
   };
 
   const handleWishlist = async (e) => {
@@ -44,19 +44,27 @@ export default function ProductCard({ product, onWishlistToggle, isWishlisted })
   return (
     <Link to={`/product/${product._id}`} className="product-card">
       <div className="product-image-wrap">
-        {mainImage ? <img src={mainImage} alt={product.name} loading="lazy" /> : <div className="product-image-placeholder"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>}
+        {mainImage
+          ? <img src={mainImage} alt={product.name} loading="lazy" />
+          : <div className="product-image-placeholder"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        }
         <div className="product-badges">
-          {discount && <span className="badge badge-error">-{discount}%</span>}
-          {product.stockStatus === 'out_of_stock' && <span className="badge badge-navy">Sold Out</span>}
-          {product.stockStatus === 'low_stock' && <span className="badge badge-warning">Low Stock</span>}
+          {product.isPreOrder && <span className="badge badge-preorder">Pre-Order</span>}
+          {discount && !product.isPreOrder && <span className="badge badge-error">-{discount}%</span>}
+          {product.stockStatus === 'out_of_stock' && !product.isPreOrder && <span className="badge badge-navy">Sold Out</span>}
+          {product.stockStatus === 'low_stock' && !product.isPreOrder && <span className="badge badge-warning">Low Stock</span>}
           {product.isFeatured && <span className="badge badge-gold">Featured</span>}
         </div>
         <button className={`wishlist-btn${wishlisted ? ' active' : ''}`} onClick={handleWishlist} aria-label="Add to wishlist">
           <svg width="18" height="18" viewBox="0 0 24 24" fill={wishlisted ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </button>
         <div className="product-overlay">
-          <button className={`btn btn-gold btn-sm add-to-cart-btn${adding ? ' loading' : ''}`} onClick={handleAddToCart} disabled={adding || product.stockStatus === 'out_of_stock'}>
-            {adding ? 'Adding...' : product.stockStatus === 'out_of_stock' ? 'Out of Stock' : 'Add to Cart'}
+          <button
+            className={`btn btn-gold btn-sm add-to-cart-btn${adding ? ' loading' : ''}`}
+            onClick={handleAddToCart}
+            disabled={adding || isUnavailable}
+          >
+            {adding ? 'Adding...' : isUnavailable ? 'Out of Stock' : product.isPreOrder ? 'Pre-Order Now' : 'Add to Cart'}
           </button>
         </div>
       </div>
@@ -73,6 +81,11 @@ export default function ProductCard({ product, onWishlistToggle, isWishlisted })
           <span className="price-current">GHS {product.price.toLocaleString('en-GH', { minimumFractionDigits: 2 })}</span>
           {product.comparePrice && <span className="price-compare">GHS {product.comparePrice.toLocaleString('en-GH', { minimumFractionDigits: 2 })}</span>}
         </div>
+        {product.isPreOrder && product.expectedDate && (
+          <p style={{ fontSize: '11px', color: '#7b5ea7', fontWeight: '600', marginTop: '4px' }}>
+            📦 Expected: {product.expectedDate}
+          </p>
+        )}
       </div>
     </Link>
   );
