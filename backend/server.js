@@ -35,7 +35,13 @@ app.use('/api/auth/', authLimiter);
 
 // CORS
 app.use(cors({
-  origin: [process.env.FRONTEND_URL || 'http://localhost:3000', 'http://localhost:5173'],
+  origin: [
+    process.env.FRONTEND_URL,
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://big-god-imports-frontend.vercel.app',
+    'https://big-god-imports-frontend-5fftazeg5-graphils-projects.vercel.app'
+  ],
   credentials: true,
   methods: ['GET','POST','PUT','DELETE','PATCH'],
   allowedHeaders: ['Content-Type','Authorization']
