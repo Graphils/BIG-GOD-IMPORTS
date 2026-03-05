@@ -87,8 +87,10 @@ export default function App() {
     <Router>
       <AuthProvider>
         <CartProvider>
-          <AppLayout />
-          <Toaster position="top-right" toastOptions={{ duration: 3000, style: { fontFamily: 'Jost, sans-serif', fontSize: '14px', borderRadius: '4px' } }} />
+          <PreOrderCartProvider>
+            <AppLayout />
+            <Toaster position="top-right" toastOptions={{ duration: 3000, style: { fontFamily: 'Jost, sans-serif', fontSize: '14px', borderRadius: '4px' } }} />
+          </PreOrderCartProvider>
         </CartProvider>
       </AuthProvider>
     </Router>
