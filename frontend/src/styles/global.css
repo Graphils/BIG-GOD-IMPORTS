@@ -182,4 +182,4 @@ input, select, textarea { font-family: var(--font-body); outline: none; }
 /* ANNOUNCEMENT BAR */
 .announcement-bar { background: var(--navy); color: var(--gold); text-align: center; padding: 10px; font-size: 13px; letter-spacing: 1px; font-weight: 500; }
 
-.badge-preorder { background: #f3e5f5; color: #6a1b9a; border: 1px solid #ce93d8; }
+.badge-preorder { background: #6a1b9a; color: #ffffff; border: none; font-size: 12px; font-weight: 800; letter-spacing: 1.5px; padding: 5px 12px; text-transform: uppercase; box-shadow: 0 2px 8px rgba(106,27,154,0.4); }
