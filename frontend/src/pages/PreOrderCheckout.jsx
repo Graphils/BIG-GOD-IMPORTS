@@ -14,14 +14,12 @@ const PAYMENT_METHODS = [
   { id: 'bank_transfer', label: 'Bank Transfer', icon: '🏦', desc: 'Access Bank Ghana' },
 ];
 
-export default function Checkout() {
+export default function PreOrderCheckout() {
   const { cart, cartTotal } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [loading, setLoading] = useState(false);
-  const [deliveryFees, setDeliveryFees] = useState({});
-  const [shippingCost, setShippingCost] = useState(0);
   const [address, setAddress] = useState({
     firstName: user?.firstName || '', lastName: user?.lastName || '',
     phone: user?.phone || '', street: user?.address?.street || '',
@@ -30,11 +28,6 @@ export default function Checkout() {
   });
 
   const items = cart?.items?.filter(i => i.product) || [];
-  const total = cartTotal + shippingCost;
-
-  useEffect(() => {
-    api.get('/delivery-fees').then(r => setDeliveryFees(r.data.fees || {})).catch(() => {});
-  }, []);
 
   useEffect(() => {
     if (!items.length) navigate('/cart');
@@ -43,17 +36,11 @@ export default function Checkout() {
   const handleAddressChange = e => {
     const { name, value } = e.target;
     setAddress(a => ({ ...a, [name]: value }));
-    if (name === 'region') {
-      const fee = deliveryFees[value];
-      setShippingCost(fee !== undefined ? fee : 0);
-    }
   };
 
   const validateAddress = () => {
-    if (!address.firstName || !address.lastName || !address.phone || !address.street || !address.city)
-      return 'Please fill in all required shipping fields.';
-    if (!address.region)
-      return 'Please select your region.';
+    if (!address.firstName || !address.lastName || !address.phone || !address.street || !address.city || !address.region)
+      return 'Please fill in all required fields.';
     return null;
   };
 
@@ -63,17 +50,20 @@ export default function Checkout() {
     setLoading(true);
     try {
       const initRes = await api.post('/payments/initialize', {
-        amount: total, email: user.email, paymentMethod,
+        amount: cartTotal,
+        email: user.email,
+        paymentMethod,
         orderData: {
           items: items.map(i => ({ product: i.product._id, quantity: i.quantity })),
-          shippingAddress: address, paymentMethod, shippingCost
+          shippingAddress: address,
+          paymentMethod,
+          shippingCost: 0
         },
         callbackUrl: `${window.location.origin}/payment/callback`
       });
       const { authorization_url } = initRes.data.data;
       window.location.href = authorization_url;
     } catch (err) {
-      console.error(err);
       toast.error(err.response?.data?.message || 'Payment initialization failed.');
       setLoading(false);
     }
@@ -81,11 +71,28 @@ export default function Checkout() {
 
   return (
     <div>
-      <div className="page-title"><div className="container"><h1>Checkout</h1></div></div>
+      <div className="page-title">
+        <div className="container">
+          <h1>Pre-Order Checkout</h1>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', marginTop: '6px' }}>
+            Complete your pre-order — delivery is included in the price.
+          </p>
+        </div>
+      </div>
+
+      {/* Pre-order notice */}
+      <div style={{ background: '#f3e5f5', borderBottom: '1px solid #ce93d8', padding: '12px 0' }}>
+        <div className="container">
+          <p style={{ fontSize: '13px', color: '#6a1b9a', fontWeight: '600' }}>
+            📦 Pre-Order — Pay now and your item will be shipped to you once it arrives in stock. You'll be notified by email.
+          </p>
+        </div>
+      </div>
+
       <div className="container checkout-layout">
         <div className="checkout-form">
           <div className="checkout-section">
-            <h2>Shipping Information</h2>
+            <h2>Delivery Information</h2>
             <div className="form-row">
               <div className="form-group"><label>First Name *</label><input name="firstName" value={address.firstName} onChange={handleAddressChange} required /></div>
               <div className="form-group"><label>Last Name *</label><input name="lastName" value={address.lastName} onChange={handleAddressChange} required /></div>
@@ -98,27 +105,8 @@ export default function Checkout() {
                 <label>Region *</label>
                 <select name="region" value={address.region} onChange={handleAddressChange} required>
                   <option value="">Select region</option>
-                  {REGIONS.map(r => (
-                    <option key={r} value={r}>
-                      {r}{!isAllPreOrder && deliveryFees[r] !== undefined ? ` — GHS ${deliveryFees[r].toFixed(2)}` : ''}
-                    </option>
-                  ))}
+                  {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
-                {!isAllPreOrder && address.region && shippingCost > 0 && (
-                  <p style={{fontSize:'13px',color:'var(--gold)',marginTop:'6px',fontWeight:'600'}}>
-                    📦 Delivery to {address.region}: GHS {shippingCost.toFixed(2)}
-                  </p>
-                )}
-                {!isAllPreOrder && address.region && shippingCost === 0 && (
-                  <p style={{fontSize:'13px',color:'#1a7a4a',marginTop:'6px',fontWeight:'600'}}>
-                    🎉 Free delivery to {address.region}!
-                  </p>
-                )}
-                {isAllPreOrder && address.region && (
-                  <p style={{fontSize:'13px',color:'#6a1b9a',marginTop:'6px',fontWeight:'600'}}>
-                    📦 Delivery included in price.
-                  </p>
-                )}
               </div>
             </div>
           </div>
@@ -148,14 +136,19 @@ export default function Checkout() {
           <div className="order-items">
             {items.map(item => (
               <div key={item.product._id} className="order-item-row">
-                <div style={{display:'flex',gap:'12px',alignItems:'center'}}>
-                  {item.product.images?.[0]?.url && <img src={item.product.images[0].url} alt={item.product.name} style={{width:'48px',height:'48px',objectFit:'cover',borderRadius:'4px'}} />}
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  {item.product.images?.[0]?.url && (
+                    <img src={item.product.images[0].url} alt={item.product.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px' }} />
+                  )}
                   <div>
-                    <p style={{fontSize:'14px',fontWeight:'500',color:'var(--navy)'}}>{item.product.name}</p>
-                    <p style={{fontSize:'12px',color:'var(--text-light)'}}>Qty: {item.quantity}</p>
+                    <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--navy)' }}>{item.product.name}</p>
+                    <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>Qty: {item.quantity}</p>
+                    {item.product.expectedDate && (
+                      <p style={{ fontSize: '11px', color: '#6a1b9a', fontWeight: '600' }}>Est: {item.product.expectedDate}</p>
+                    )}
                   </div>
                 </div>
-                <span style={{fontSize:'14px',fontWeight:'600'}}>GHS {(item.product.price * item.quantity).toFixed(2)}</span>
+                <span style={{ fontSize: '14px', fontWeight: '600' }}>GHS {(item.product.price * item.quantity).toFixed(2)}</span>
               </div>
             ))}
           </div>
@@ -163,34 +156,21 @@ export default function Checkout() {
           <div className="summary-row">
             <span>Subtotal</span><span>GHS {cartTotal.toFixed(2)}</span>
           </div>
-          {!isAllPreOrder && (
-            <div className="summary-row">
-              <span>Delivery</span>
-              <span>
-                {!address.region
-                  ? <span style={{color:'var(--text-light)',fontSize:'13px'}}>Select region</span>
-                  : shippingCost === 0
-                    ? <span style={{color:'#1a7a4a',fontWeight:'600'}}>Free</span>
-                    : <span>GHS {shippingCost.toFixed(2)}</span>
-                }
-              </span>
-            </div>
-          )}
-          {isAllPreOrder && (
-            <div className="summary-row">
-              <span>Delivery</span>
-              <span style={{color:'#6a1b9a',fontWeight:'600'}}>Included</span>
-            </div>
-          )}
+          <div className="summary-row">
+            <span>Delivery</span>
+            <span style={{ color: '#6a1b9a', fontWeight: '700' }}>Included</span>
+          </div>
           <div className="summary-divider"></div>
-          <div className="summary-row summary-total"><span>Total</span><span>GHS {total.toFixed(2)}</span></div>
+          <div className="summary-row summary-total">
+            <span>Total</span><span>GHS {cartTotal.toFixed(2)}</span>
+          </div>
           <button
             className="btn btn-gold"
-            style={{width:'100%',marginTop:'24px',padding:'16px'}}
+            style={{ width: '100%', marginTop: '24px', padding: '16px' }}
             onClick={handlePaystack}
-            disabled={loading || !address.region}
+            disabled={loading}
           >
-            {loading ? 'Processing...' : !address.region ? 'Select a region first' : `Pay GHS ${total.toFixed(2)}`}
+            {loading ? 'Processing...' : `Pre-Order — Pay GHS ${cartTotal.toFixed(2)}`}
           </button>
         </div>
       </div>
