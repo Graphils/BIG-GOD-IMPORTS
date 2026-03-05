@@ -27,6 +27,7 @@ const AdminProducts = lazy(() => import('./pages/admin/Products'));
 const AdminOrders = lazy(() => import('./pages/admin/Orders'));
 const AdminUsers = lazy(() => import('./pages/admin/Users'));
 const AdminDeliveryFees = lazy(() => import('./pages/admin/DeliveryFees'));
+const PreOrder = lazy(() => import('./pages/PreOrder'));
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -50,6 +51,7 @@ function AppLayout() {
             <Route path="/shop" element={<Shop />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/pre-order" element={<PreOrder />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

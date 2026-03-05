@@ -45,6 +45,7 @@ export default function Navbar() {
             <NavLink to="/" onClick={() => setMenuOpen(false)} end>Home</NavLink>
             <NavLink to="/shop" onClick={() => setMenuOpen(false)}>Shop</NavLink>
             <NavLink to="/contact" onClick={() => setMenuOpen(false)}>Contact</NavLink>
+            <NavLink to="/pre-order" onClick={() => setMenuOpen(false)} className="preorder-link">Pre-Order</NavLink>
             {isAdmin && <NavLink to="/admin" onClick={() => setMenuOpen(false)} className="admin-link">Admin</NavLink>}
           </nav>
           <div className="navbar-actions">

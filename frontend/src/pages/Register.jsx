@@ -28,8 +28,8 @@ export default function Register() {
     setLoading(true);
     try {
       await register({ username: form.username, email: form.email, password: form.password, firstName: form.firstName, lastName: form.lastName, phone: form.phone, captchaToken });
-      toast.success('Account created! Welcome to BIG-GOD IMPORTS!');
-      navigate('/');
+      toast.success('Account created! Please sign in.');
+      navigate('/login');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed.');
       recaptchaRef.current?.reset(); setCaptchaToken('');

@@ -30,11 +30,14 @@ export default function Checkout() {
   });
 
   const items = cart?.items?.filter(i => i.product) || [];
-  const total = cartTotal + shippingCost;
+  const isAllPreOrder = items.length > 0 && items.every(i => i.product?.isPreOrder);
+  const total = isAllPreOrder ? cartTotal : cartTotal + shippingCost;
 
   useEffect(() => {
-    api.get('/delivery-fees').then(r => setDeliveryFees(r.data.fees || {})).catch(() => {});
-  }, []);
+    if (!isAllPreOrder) {
+      api.get('/delivery-fees').then(r => setDeliveryFees(r.data.fees || {})).catch(() => {});
+    }
+  }, [isAllPreOrder]);
 
   useEffect(() => {
     if (!items.length) navigate('/cart');
@@ -50,8 +53,10 @@ export default function Checkout() {
   };
 
   const validateAddress = () => {
-    if (!address.firstName || !address.lastName || !address.phone || !address.street || !address.city || !address.region)
+    if (!address.firstName || !address.lastName || !address.phone || !address.street || !address.city)
       return 'Please fill in all required shipping fields.';
+    if (!isAllPreOrder && !address.region)
+      return 'Please select your region.';
     return null;
   };
 
@@ -93,23 +98,28 @@ export default function Checkout() {
             <div className="form-row">
               <div className="form-group"><label>City *</label><input name="city" value={address.city} onChange={handleAddressChange} required /></div>
               <div className="form-group">
-                <label>Region *</label>
-                <select name="region" value={address.region} onChange={handleAddressChange} required>
+                <label>Region {isAllPreOrder ? '' : '*'}</label>
+                <select name="region" value={address.region} onChange={handleAddressChange} required={!isAllPreOrder}>
                   <option value="">Select region</option>
                   {REGIONS.map(r => (
                     <option key={r} value={r}>
-                      {r}{deliveryFees[r] !== undefined ? ` — GHS ${deliveryFees[r].toFixed(2)}` : ''}
+                      {r}{!isAllPreOrder && deliveryFees[r] !== undefined ? ` — GHS ${deliveryFees[r].toFixed(2)}` : ''}
                     </option>
                   ))}
                 </select>
-                {address.region && shippingCost > 0 && (
+                {!isAllPreOrder && address.region && shippingCost > 0 && (
                   <p style={{fontSize:'13px',color:'var(--gold)',marginTop:'6px',fontWeight:'600'}}>
                     📦 Delivery to {address.region}: GHS {shippingCost.toFixed(2)}
                   </p>
                 )}
-                {address.region && shippingCost === 0 && (
+                {!isAllPreOrder && address.region && shippingCost === 0 && (
                   <p style={{fontSize:'13px',color:'#1a7a4a',marginTop:'6px',fontWeight:'600'}}>
                     🎉 Free delivery to {address.region}!
+                  </p>
+                )}
+                {isAllPreOrder && (
+                  <p style={{fontSize:'13px',color:'#6a1b9a',marginTop:'6px',fontWeight:'600'}}>
+                    📦 No delivery fee — price includes shipping.
                   </p>
                 )}
               </div>
@@ -156,26 +166,34 @@ export default function Checkout() {
           <div className="summary-row">
             <span>Subtotal</span><span>GHS {cartTotal.toFixed(2)}</span>
           </div>
-          <div className="summary-row">
-            <span>Delivery</span>
-            <span>
-              {!address.region
-                ? <span style={{color:'var(--text-light)',fontSize:'13px'}}>Select region</span>
-                : shippingCost === 0
-                  ? <span style={{color:'#1a7a4a',fontWeight:'600'}}>Free</span>
-                  : <span>GHS {shippingCost.toFixed(2)}</span>
-              }
-            </span>
-          </div>
+          {!isAllPreOrder && (
+            <div className="summary-row">
+              <span>Delivery</span>
+              <span>
+                {!address.region
+                  ? <span style={{color:'var(--text-light)',fontSize:'13px'}}>Select region</span>
+                  : shippingCost === 0
+                    ? <span style={{color:'#1a7a4a',fontWeight:'600'}}>Free</span>
+                    : <span>GHS {shippingCost.toFixed(2)}</span>
+                }
+              </span>
+            </div>
+          )}
+          {isAllPreOrder && (
+            <div className="summary-row">
+              <span>Delivery</span>
+              <span style={{color:'#6a1b9a',fontWeight:'600'}}>Included</span>
+            </div>
+          )}
           <div className="summary-divider"></div>
           <div className="summary-row summary-total"><span>Total</span><span>GHS {total.toFixed(2)}</span></div>
           <button
             className="btn btn-gold"
             style={{width:'100%',marginTop:'24px',padding:'16px'}}
             onClick={handlePaystack}
-            disabled={loading || !address.region}
+            disabled={loading || (!isAllPreOrder && !address.region)}
           >
-            {loading ? 'Processing...' : !address.region ? 'Select a region first' : `Pay GHS ${total.toFixed(2)}`}
+            {loading ? 'Processing...' : (!isAllPreOrder && !address.region) ? 'Select a region first' : `Pay GHS ${total.toFixed(2)}`}
           </button>
         </div>
       </div>

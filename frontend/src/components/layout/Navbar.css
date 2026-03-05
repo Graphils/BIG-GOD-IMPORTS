@@ -46,3 +46,6 @@
   .navbar-links a { font-size: 18px; padding: 16px 0; border-bottom: 1px solid var(--border); }
   .navbar-links a::after { display: none; }
 }
+
+.preorder-link { color: #ce93d8 !important; }
+.preorder-link.active, .preorder-link:hover { color: #6a1b9a !important; }
