@@ -1,0 +1,12 @@
+.contact-layout { display: grid; grid-template-columns: 1fr 1.4fr; gap: 60px; padding: 64px 24px; }
+.contact-info h2, .contact-form-wrap h2 { font-size: 32px; color: var(--navy); margin-bottom: 16px; }
+.contact-info > p { color: var(--text-light); line-height: 1.8; margin-bottom: 36px; }
+.contact-methods { display: flex; flex-direction: column; gap: 20px; }
+.contact-method { display: flex; gap: 16px; align-items: flex-start; padding: 20px; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); transition: var(--transition); }
+.contact-method:hover { border-color: var(--gold); box-shadow: var(--shadow-gold); }
+.contact-method-icon { width: 48px; height: 48px; background: var(--navy); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--gold); flex-shrink: 0; }
+.contact-method > div { display: flex; flex-direction: column; gap: 2px; }
+.contact-method strong { font-size: 15px; font-weight: 700; color: var(--navy); }
+.contact-method span { font-size: 14px; color: var(--text-light); }
+.contact-form-wrap { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 40px; }
+@media (max-width: 900px) { .contact-layout { grid-template-columns: 1fr; } }

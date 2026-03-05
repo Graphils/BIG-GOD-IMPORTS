@@ -1,0 +1,17 @@
+.auth-page { min-height: 100vh; background: var(--navy); display: flex; align-items: center; justify-content: center; padding: 40px 16px; }
+.auth-card { background: var(--white); border-radius: var(--radius-md); padding: 48px 40px; width: 100%; max-width: 480px; box-shadow: var(--shadow-lg); }
+.auth-card-wide { max-width: 600px; }
+.auth-header { text-align: center; margin-bottom: 36px; }
+.auth-logo { display: inline-flex; flex-direction: column; align-items: center; margin-bottom: 24px; }
+.auth-header h1 { font-size: 32px; color: var(--navy); }
+.auth-header p { color: var(--text-light); font-size: 15px; margin-top: 8px; }
+.auth-form { display: flex; flex-direction: column; }
+.password-wrap { position: relative; }
+.password-wrap input { padding-right: 48px; }
+.show-pass { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-light); padding: 4px; display: flex; align-items: center; background: none; border: none; cursor: pointer; }
+.show-pass:hover { color: var(--navy); }
+.captcha-wrap { margin: 4px 0; display: flex; justify-content: center; }
+.auth-switch { text-align: center; font-size: 14px; color: var(--text-light); margin-top: 24px; }
+.auth-link { color: var(--gold); font-weight: 600; }
+.auth-link:hover { color: var(--navy); }
+@media (max-width: 600px) { .auth-card { padding: 32px 24px; } }

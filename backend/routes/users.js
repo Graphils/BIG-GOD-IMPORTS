@@ -1,0 +1,10 @@
+const express = require('express');
+const router = express.Router();
+const { updateProfile, changePassword, toggleFavorite, getFavorites } = require('../controllers/userController');
+const { protect } = require('../middleware/auth');
+router.use(protect);
+router.put('/profile', updateProfile);
+router.put('/change-password', changePassword);
+router.get('/favorites', getFavorites);
+router.post('/favorites/:productId', toggleFavorite);
+module.exports = router;
