@@ -165,7 +165,7 @@ export default function Home() {
             <p>Our team is ready to assist you. Reach out via WhatsApp, phone, or email.</p>
           </div>
           <div className="cta-buttons">
-            <a href="https://wa.me/233592384780" target="_blank" rel="noopener noreferrer" className="btn btn-gold btn-lg">WhatsApp Us</a>
+            <a href="https://wa.me/233204069997" target="_blank" rel="noopener noreferrer" className="btn btn-gold btn-lg">WhatsApp Us</a>
             <Link to="/contact" className="btn btn-outline btn-lg" style={{color:'var(--white)',borderColor:'var(--white)'}}>Send a Message</Link>
           </div>
         </div>
