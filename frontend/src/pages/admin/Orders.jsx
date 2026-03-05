@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '../../utils/api';
+import '../../styles/admin.css';
 
 const ORDER_STATUSES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -16,41 +17,42 @@ const STATUS_STYLES = {
 function OrderDetailModal({ order, onClose, onUpdate }) {
   const [newStatus, setNewStatus] = useState(order.status);
   const [note, setNote] = useState('');
+  const [shippingCost, setShippingCost] = useState(order.shippingCost || 0);
   const [loading, setLoading] = useState(false);
 
   const handleStatusUpdate = async () => {
-    if (newStatus === order.status && !note) { toast.error('No changes to save.'); return; }
+    if (newStatus === order.status && !note && shippingCost === order.shippingCost) { toast.error('No changes to save.'); return; }
     setLoading(true);
     try {
-      await api.put(`/admin/orders/${order._id}/status`, { status: newStatus, note });
-      toast.success('Order status updated! Customer has been notified by email.');
+      await api.put(`/admin/orders/${order._id}/status`, { status: newStatus, note, shippingCost: Number(shippingCost) });
+      toast.success('Order updated! Customer notified by email.');
       onUpdate();
-    } catch { toast.error('Failed to update status.'); } finally { setLoading(false); }
+    } catch { toast.error('Failed to update order.'); } finally { setLoading(false); }
   };
 
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background: 'var(--white)', borderRadius: 'var(--radius-md)', width: '100%', maxWidth: '680px', maxHeight: '90vh', overflow: 'auto', padding: '40px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px' }}>
+      <div style={{ background: 'var(--white)', borderRadius: 'var(--radius-md)', width: '100%', maxWidth: '680px', maxHeight: '90vh', overflow: 'auto', padding: 'clamp(20px, 5vw, 40px)', margin: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
           <div>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '26px', color: 'var(--navy)' }}>{order.orderNumber}</h2>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(20px, 4vw, 26px)', color: 'var(--navy)' }}>{order.orderNumber}</h2>
             <p style={{ color: 'var(--text-light)', fontSize: '13px', marginTop: '4px' }}>
-              Placed {new Date(order.createdAt).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' })}
+              {new Date(order.createdAt).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light)' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light)', flexShrink: 0 }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
-          <div style={{ background: 'var(--cream)', padding: '16px', borderRadius: 'var(--radius)' }}>
+        <div className="admin-two-col" style={{ marginBottom: '20px' }}>
+          <div style={{ background: 'var(--cream)', padding: '14px', borderRadius: 'var(--radius)' }}>
             <p style={{ fontSize: '11px', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Customer</p>
             <p style={{ fontWeight: '600', color: 'var(--navy)' }}>{order.user?.username || 'N/A'}</p>
             <p style={{ fontSize: '13px', color: 'var(--text-mid)' }}>{order.user?.email}</p>
             <p style={{ fontSize: '13px', color: 'var(--text-mid)' }}>{order.shippingAddress?.phone}</p>
           </div>
-          <div style={{ background: 'var(--cream)', padding: '16px', borderRadius: 'var(--radius)' }}>
+          <div style={{ background: 'var(--cream)', padding: '14px', borderRadius: 'var(--radius)' }}>
             <p style={{ fontSize: '11px', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Shipping To</p>
             <p style={{ fontWeight: '600', color: 'var(--navy)' }}>{order.shippingAddress?.firstName} {order.shippingAddress?.lastName}</p>
             <p style={{ fontSize: '13px', color: 'var(--text-mid)' }}>{order.shippingAddress?.street}</p>
@@ -58,54 +60,56 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
           </div>
         </div>
 
-        <div style={{ marginBottom: '24px' }}>
+        {/* Items */}
+        <div style={{ marginBottom: '20px' }}>
           <p style={{ fontSize: '11px', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Order Items</p>
           {order.items?.map(item => (
-            <div key={item._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                {item.image && <img src={item.image} alt={item.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: 'var(--radius)' }} />}
-                <div>
-                  <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--navy)' }}>{item.name}</p>
+            <div key={item._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border)', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', minWidth: 0 }}>
+                {item.image && <img src={item.image} alt={item.name} style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: 'var(--radius)', flexShrink: 0 }} />}
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--navy)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p>
                   <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>GHS {item.price?.toFixed(2)} × {item.quantity}</p>
                 </div>
               </div>
-              <p style={{ fontWeight: '700', color: 'var(--navy)' }}>GHS {(item.price * item.quantity).toFixed(2)}</p>
+              <p style={{ fontWeight: '700', color: 'var(--navy)', flexShrink: 0 }}>GHS {(item.price * item.quantity).toFixed(2)}</p>
             </div>
           ))}
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)', color: 'var(--text-mid)', fontSize: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)', color: 'var(--text-mid)', fontSize: '14px' }}>
             <span>Shipping</span><span>GHS {order.shippingCost?.toFixed(2)}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 0', fontWeight: '700', fontSize: '18px', color: 'var(--navy)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', fontWeight: '700', fontSize: '18px', color: 'var(--navy)' }}>
             <span>Total</span><span>GHS {order.total?.toFixed(2)}</span>
           </div>
         </div>
 
-        <div style={{ marginBottom: '24px', padding: '16px', background: 'var(--cream)', borderRadius: 'var(--radius)', display: 'flex', gap: '16px' }}>
+        {/* Payment info */}
+        <div style={{ marginBottom: '20px', padding: '14px', background: 'var(--cream)', borderRadius: 'var(--radius)', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
           <div>
             <p style={{ fontSize: '11px', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '1px' }}>Payment</p>
             <p style={{ fontWeight: '600', color: 'var(--navy)', textTransform: 'capitalize' }}>{order.paymentMethod?.replace('_', ' ')}</p>
           </div>
           <div>
-            <p style={{ fontSize: '11px', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '1px' }}>Payment Status</p>
+            <p style={{ fontSize: '11px', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '1px' }}>Status</p>
             <p style={{ fontWeight: '600', color: order.paymentStatus === 'paid' ? 'var(--success)' : 'var(--error)', textTransform: 'uppercase' }}>{order.paymentStatus}</p>
           </div>
-          {order.paystackReference && <div>
-            <p style={{ fontSize: '11px', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '1px' }}>Reference</p>
-            <p style={{ fontWeight: '500', color: 'var(--text-mid)', fontSize: '13px' }}>{order.paystackReference}</p>
-          </div>}
         </div>
 
         {/* Status Update */}
-        <div style={{ background: 'var(--cream)', padding: '20px', borderRadius: 'var(--radius)', marginBottom: '20px' }}>
-          <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--navy)', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>Update Order Status</p>
-          <p style={{ fontSize: '12px', color: 'var(--text-light)', marginBottom: '12px' }}>The customer will automatically receive an email notification when you update the status.</p>
-          <div className="form-group" style={{ marginBottom: '12px' }}>
+        <div style={{ background: 'var(--cream)', padding: '16px', borderRadius: 'var(--radius)', marginBottom: '16px' }}>
+          <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--navy)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Update Order Status</p>
+          <p style={{ fontSize: '12px', color: 'var(--text-light)', marginBottom: '12px' }}>Customer will be notified by email.</p>
+          <div className="form-group" style={{ marginBottom: '10px' }}>
             <label>New Status</label>
             <select value={newStatus} onChange={e => setNewStatus(e.target.value)} style={{ background: 'var(--white)' }}>
               {ORDER_STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
             </select>
           </div>
-          <div className="form-group" style={{ marginBottom: '16px' }}>
+          <div className="form-group" style={{ marginBottom: '10px' }}>
+            <label>Delivery Fee (GHS)</label>
+            <input type="number" min="0" step="0.01" value={shippingCost} onChange={e => setShippingCost(e.target.value)} placeholder="e.g. 20.00" style={{ background: 'var(--white)' }} />
+          </div>
+          <div className="form-group" style={{ marginBottom: '14px' }}>
             <label>Internal Note (optional)</label>
             <input value={note} onChange={e => setNote(e.target.value)} placeholder="e.g. Dispatched via GhanaPost..." />
           </div>
@@ -119,8 +123,8 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
           <div>
             <p style={{ fontSize: '11px', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Status History</p>
             {[...order.statusHistory].reverse().map((h, i) => (
-              <div key={i} style={{ display: 'flex', gap: '12px', marginBottom: '10px', fontSize: '13px', color: 'var(--text-mid)' }}>
-                <span style={{ ...STATUS_STYLES[h.status], padding: '2px 8px', borderRadius: '2px', fontSize: '11px', fontWeight: '700', flexShrink: 0 }}>{h.status?.toUpperCase()}</span>
+              <div key={i} style={{ display: 'flex', gap: '10px', marginBottom: '10px', fontSize: '13px', color: 'var(--text-mid)', flexWrap: 'wrap' }}>
+                <span style={{ ...STATUS_STYLES[h.status], padding: '2px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', flexShrink: 0 }}>{h.status?.toUpperCase()}</span>
                 <span>{h.note || 'Status updated'} · {new Date(h.timestamp).toLocaleString('en-GH')}</span>
               </div>
             ))}
@@ -150,71 +154,88 @@ export default function AdminOrders() {
   useEffect(() => { fetchOrders(); }, [page, statusFilter]);
 
   return (
-    <div style={{ background: 'var(--cream)', minHeight: '100vh' }}>
-      <div style={{ background: 'var(--navy)', padding: '32px 0' }}>
+    <div className="admin-page">
+      <div className="admin-header">
         <div className="container">
           <span className="section-label">Administration</span>
-          <h1 style={{ color: 'var(--white)', fontSize: 'clamp(22px,3vw,32px)', margin: '8px 0 4px' }}>Order Management</h1>
-          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>{total} orders total</p>
+          <h1>Order Management</h1>
+          <p>{total} orders total</p>
         </div>
       </div>
 
-      <div className="container" style={{ padding: '32px 24px' }}>
-        {/* Filter */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
+      <div className="container">
+        {/* Filter buttons */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
           {['', ...ORDER_STATUSES].map(s => (
             <button key={s} onClick={() => { setStatusFilter(s); setPage(1); }}
               className={`btn btn-sm ${statusFilter === s ? 'btn-primary' : 'btn-outline'}`}>
-              {s ? s.charAt(0).toUpperCase() + s.slice(1) : 'All Orders'}
+              {s ? s.charAt(0).toUpperCase() + s.slice(1) : 'All'}
             </button>
           ))}
         </div>
 
-        <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-          {loading ? <div className="loading-page"><div className="spinner" /></div> : orders.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-light)' }}>
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" style={{ margin: '0 auto 16px' }}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
-              <p>No orders found.</p>
+        {loading ? <div className="loading-page"><div className="spinner" /></div> : orders.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-light)', background: 'var(--white)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+            <p>No orders found.</p>
+          </div>
+        ) : (
+          <>
+            {/* Desktop Table */}
+            <div className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
+              <div className="admin-table-wrap order-table">
+                <table>
+                  <thead>
+                    <tr style={{ background: 'var(--navy)' }}>
+                      {['Order #', 'Customer', 'Items', 'Total', 'Payment', 'Status', 'Date', ''].map(h => (
+                        <th key={h} style={{ padding: '14px 16px', textAlign: 'left', color: 'var(--gold)', fontSize: '11px', fontWeight: '600', letterSpacing: '1.5px', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map((order, i) => (
+                      <tr key={order._id} style={{ borderBottom: '1px solid var(--border)', background: i % 2 === 0 ? 'var(--white)' : 'var(--cream)', cursor: 'pointer' }} onClick={() => setSelectedOrder(order)}>
+                        <td style={{ padding: '14px 16px', fontWeight: '700', color: 'var(--navy)', fontSize: '14px', whiteSpace: 'nowrap' }}>{order.orderNumber}</td>
+                        <td style={{ padding: '14px 16px' }}>
+                          <p style={{ fontSize: '14px', color: 'var(--navy)', fontWeight: '500', whiteSpace: 'nowrap' }}>{order.user?.username}</p>
+                          <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>{order.user?.email}</p>
+                        </td>
+                        <td style={{ padding: '14px 16px', fontSize: '14px', color: 'var(--text-mid)', whiteSpace: 'nowrap' }}>{order.items?.length} item{order.items?.length !== 1 ? 's' : ''}</td>
+                        <td style={{ padding: '14px 16px', fontWeight: '700', color: 'var(--navy)', fontSize: '14px', whiteSpace: 'nowrap' }}>GHS {order.total?.toFixed(2)}</td>
+                        <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontSize: '12px', fontWeight: '600', color: order.paymentStatus === 'paid' ? 'var(--success)' : 'var(--error)', textTransform: 'uppercase' }}>{order.paymentStatus}</span>
+                        </td>
+                        <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
+                          <span style={{ ...STATUS_STYLES[order.status], padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase' }}>{order.status}</span>
+                        </td>
+                        <td style={{ padding: '14px 16px', fontSize: '13px', color: 'var(--text-light)', whiteSpace: 'nowrap' }}>{new Date(order.createdAt).toLocaleDateString('en-GH')}</td>
+                        <td style={{ padding: '14px 16px' }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: 'var(--navy)' }}>
-                  {['Order #', 'Customer', 'Items', 'Total', 'Payment', 'Status', 'Date', ''].map(h => (
-                    <th key={h} style={{ padding: '14px 16px', textAlign: 'left', color: 'var(--gold)', fontSize: '11px', fontWeight: '600', letterSpacing: '1.5px', textTransform: 'uppercase' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order, i) => (
-                  <tr key={order._id} style={{ borderBottom: '1px solid var(--border)', background: i % 2 === 0 ? 'var(--white)' : 'var(--cream)', cursor: 'pointer' }} onClick={() => setSelectedOrder(order)}>
-                    <td style={{ padding: '14px 16px' }}>
-                      <p style={{ fontWeight: '700', color: 'var(--navy)', fontSize: '14px' }}>{order.orderNumber}</p>
-                    </td>
-                    <td style={{ padding: '14px 16px' }}>
-                      <p style={{ fontSize: '14px', color: 'var(--navy)', fontWeight: '500' }}>{order.user?.username}</p>
-                      <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>{order.user?.email}</p>
-                    </td>
-                    <td style={{ padding: '14px 16px', fontSize: '14px', color: 'var(--text-mid)' }}>{order.items?.length} item{order.items?.length !== 1 ? 's' : ''}</td>
-                    <td style={{ padding: '14px 16px', fontWeight: '700', color: 'var(--navy)', fontSize: '14px' }}>GHS {order.total?.toFixed(2)}</td>
-                    <td style={{ padding: '14px 16px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '600', color: order.paymentStatus === 'paid' ? 'var(--success)' : 'var(--error)', textTransform: 'uppercase' }}>{order.paymentStatus}</span>
-                    </td>
-                    <td style={{ padding: '14px 16px' }}>
-                      <span style={{ ...STATUS_STYLES[order.status], padding: '4px 10px', borderRadius: '2px', fontSize: '11px', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                        {order.status}
-                      </span>
-                    </td>
-                    <td style={{ padding: '14px 16px', fontSize: '13px', color: 'var(--text-light)' }}>{new Date(order.createdAt).toLocaleDateString('en-GH')}</td>
-                    <td style={{ padding: '14px 16px' }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+
+            {/* Mobile Cards */}
+            <div className="order-cards">
+              {orders.map(order => (
+                <div key={order._id} className="order-card" onClick={() => setSelectedOrder(order)} style={{ cursor: 'pointer' }}>
+                  <div className="order-card-header">
+                    <p style={{ fontWeight: '700', color: 'var(--navy)', fontSize: '15px' }}>{order.orderNumber}</p>
+                    <span style={{ ...STATUS_STYLES[order.status], padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase' }}>{order.status}</span>
+                  </div>
+                  <div className="order-card-row"><span>Customer</span><span style={{ fontWeight: '500' }}>{order.user?.username}</span></div>
+                  <div className="order-card-row"><span>Items</span><span>{order.items?.length} item{order.items?.length !== 1 ? 's' : ''}</span></div>
+                  <div className="order-card-row"><span>Total</span><span style={{ fontWeight: '700', color: 'var(--navy)' }}>GHS {order.total?.toFixed(2)}</span></div>
+                  <div className="order-card-row"><span>Payment</span><span style={{ color: order.paymentStatus === 'paid' ? 'var(--success)' : 'var(--error)', fontWeight: '600', textTransform: 'uppercase' }}>{order.paymentStatus}</span></div>
+                  <div className="order-card-row" style={{ border: 'none' }}><span>Date</span><span>{new Date(order.createdAt).toLocaleDateString('en-GH')}</span></div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         {pages > 1 && (
           <div className="pagination">
