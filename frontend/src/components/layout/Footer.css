@@ -17,5 +17,6 @@
 .footer-bottom-inner { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 .footer-bottom p { font-size: 13px; color: #555; }
 .footer-bottom strong { color: #888; }
-@media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; } }
-@media (max-width: 600px) { .footer-grid { grid-template-columns: 1fr; gap: 24px; } .footer-bottom-inner { flex-direction: column; text-align: center; } }
+@media (max-width: 900px) { .footer-grid { grid-template-columns: 1.5fr 1fr 1fr; gap: 24px; } }
+@media (max-width: 600px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 20px; } .footer-bottom-inner { flex-direction: column; text-align: center; } }
+@media (max-width: 400px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 16px; } }
