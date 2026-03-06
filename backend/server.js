@@ -46,7 +46,7 @@ app.use(cors({
       'http://localhost:3000',
     ];
     // Allow all Vercel deployments and Railway
-    if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app') || origin.endsWith('.railway.app')) {
+    if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app') || origin.endsWith('.railway.app') || origin === 'https://biggodimports.shop' || origin === 'https://www.biggodimports.shop') {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
