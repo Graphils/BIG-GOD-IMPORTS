@@ -165,6 +165,7 @@ router.get('/orders', async (req, res) => {
 router.put('/orders/:id/status', async (req, res) => {
   try {
     const { status, note, shippingCost } = req.body;
+    if (!status) return res.status(400).json({ success: false, message: 'Status is required.' });
     const order = await Order.findById(req.params.id).populate('user','email username firstName');
     if (!order) return res.status(404).json({ success: false, message: 'Order not found.' });
     order.status = status;
@@ -177,7 +178,10 @@ router.put('/orders/:id/status', async (req, res) => {
     await order.save();
     try { await sendOrderStatusEmail(order.user, order, status); } catch(e) { console.error('Email err:', e.message); }
     res.json({ success: true, order });
-  } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
+  } catch (err) {
+    console.error('Order update error:', err);
+    res.status(500).json({ success: false, message: err.message || 'Error updating order.' });
+  }
 });
 
 // USER MANAGEMENT

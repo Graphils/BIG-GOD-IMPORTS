@@ -28,7 +28,7 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
       onUpdate();
     } catch (err) {
       console.error(err);
-      toast.error('Failed to update order.');
+      toast.error(err.response?.data?.message || 'Failed to update order.');
       setLoading(false);
     }
   };
