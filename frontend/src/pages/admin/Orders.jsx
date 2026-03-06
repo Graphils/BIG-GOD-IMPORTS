@@ -145,6 +145,17 @@ export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
+  const [clearing, setClearing] = useState(false);
+
+  const handleClearOrders = async () => {
+    if (!window.confirm('Clear all delivered and cancelled orders? This cannot be undone.')) return;
+    setClearing(true);
+    try {
+      const res = await api.delete('/admin/orders/clear');
+      toast.success(res.data.message);
+      fetchOrders();
+    } catch { toast.error('Failed to clear orders.'); } finally { setClearing(false); }
+  };
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);

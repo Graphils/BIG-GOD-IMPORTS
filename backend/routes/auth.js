@@ -107,4 +107,16 @@ router.post('/reset-password/:token', async (req, res) => {
   }
 });
 
+// DELETE /api/auth/delete-account
+router.delete('/delete-account', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+    await user.deleteOne();
+    res.json({ success: true, message: 'Account deleted successfully.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to delete account.' });
+  }
+});
+
 module.exports = router;

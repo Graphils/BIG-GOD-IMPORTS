@@ -23,6 +23,12 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
+
   useEffect(() => {
     const handler = (e) => { if (userMenuRef.current && !userMenuRef.current.contains(e.target)) setUserMenuOpen(false); };
     document.addEventListener('mousedown', handler);
@@ -55,14 +61,26 @@ export default function Navbar() {
             <span className="logo-sub">IMPORTS</span>
           </Link>
           <nav className={`navbar-links${menuOpen ? ' open' : ''}`}>
-            <NavLink to="/" onClick={() => setMenuOpen(false)} end>Home</NavLink>
-            <NavLink to="/shop" onClick={() => setMenuOpen(false)}>Shop</NavLink>
-            <NavLink to="/contact" onClick={() => setMenuOpen(false)}>Contact</NavLink>
-            <NavLink to="/pre-order" onClick={() => setMenuOpen(false)} className="preorder-link">Pre-Order</NavLink>
+            <NavLink to="/" onClick={() => setMenuOpen(false)} end>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              Home
+            </NavLink>
+            <NavLink to="/shop" onClick={() => setMenuOpen(false)}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              Shop
+            </NavLink>
+            <NavLink to="/pre-order" onClick={() => setMenuOpen(false)} className="preorder-link">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Pre-Order
+            </NavLink>
+            <NavLink to="/contact" onClick={() => setMenuOpen(false)}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.54 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              Contact
+            </NavLink>
             {isAdmin && <NavLink to="/admin" onClick={() => setMenuOpen(false)} className="admin-link">Admin</NavLink>}
           </nav>
           <div className="navbar-actions">
-            <button className="icon-btn" onClick={() => setSearchOpen(s => !s)} aria-label="Search">
+            <button className="icon-btn search-icon-btn" onClick={() => setSearchOpen(s => !s)} aria-label="Search" title="Search">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             </button>
             {user ? (
@@ -85,8 +103,9 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              <Link to="/login" className="icon-btn" aria-label="Sign in">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <Link to="/login" className="signin-btn" aria-label="Sign in">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Sign In</span>
               </Link>
             )}
             <Link to="/cart" className="icon-btn cart-btn" aria-label="Cart" title="My Cart">

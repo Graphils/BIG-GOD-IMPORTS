@@ -213,4 +213,14 @@ router.patch('/reviews/:id/approve', async (req, res) => {
   } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
 });
 
+// DELETE /api/admin/orders/clear - clear all delivered/cancelled orders
+router.delete('/orders/clear', async (req, res) => {
+  try {
+    const result = await Order.deleteMany({ status: { $in: ['delivered', 'cancelled'] } });
+    res.json({ success: true, message: `${result.deletedCount} orders cleared.` });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to clear orders.' });
+  }
+});
+
 module.exports = router;

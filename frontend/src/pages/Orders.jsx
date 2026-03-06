@@ -7,13 +7,35 @@ const STATUS_COLORS = { pending:'badge-warning', confirmed:'badge-navy', process
 export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  useEffect(() => {
+  const [clearing, setClearing] = useState(false);
+
+  const fetchOrders = () => {
     api.get('/orders/my-orders').then(r => setOrders(r.data.orders || [])).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { fetchOrders(); }, []);
+
+  const handleClearDelivered = async () => {
+    if (!window.confirm('Remove all delivered orders from your history?')) return;
+    setClearing(true);
+    try {
+      await api.delete('/orders/clear-delivered');
+      fetchOrders();
+    } catch { } finally { setClearing(false); }
+  };
   if (loading) return <div className="loading-page"><div className="spinner"/></div>;
   return (
     <div>
-      <div className="page-title"><div className="container"><h1>My Orders</h1></div></div>
+      <div className="page-title">
+        <div className="container" style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'12px'}}>
+          <h1>My Orders</h1>
+          {orders.some(o => o.status === 'delivered') && (
+            <button onClick={handleClearDelivered} disabled={clearing} className="btn btn-outline btn-sm">
+              {clearing ? 'Clearing...' : 'Clear Delivered'}
+            </button>
+          )}
+        </div>
+      </div>
       <div className="container" style={{padding:'48px 24px'}}>
         {!orders.length ? (
           <div className="empty-state"><h3>No orders yet</h3><p>You haven't placed any orders.</p><Link to="/shop" className="btn btn-primary">Start Shopping</Link></div>

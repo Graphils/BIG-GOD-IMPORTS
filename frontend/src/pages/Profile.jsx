@@ -1,11 +1,31 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../utils/api';
 
 export default function Profile() {
   const { user, updateProfile } = useAuth();
   const [form, setForm] = useState({ firstName: user?.firstName||'', lastName: user?.lastName||'', phone: user?.phone||'', address: { street: user?.address?.street||'', city: user?.address?.city||'', region: user?.address?.region||'' } });
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const navigate = useNavigate();
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('Are you sure you want to delete your account? This cannot be undone.')) return;
+    if (!window.confirm('Last warning — all your data will be permanently deleted. Continue?')) return;
+    setDeleting(true);
+    try {
+      await api.delete('/auth/delete-account');
+      logout();
+      navigate('/');
+      toast.success('Your account has been deleted.');
+    } catch {
+      toast.error('Failed to delete account.');
+    } finally {
+      setDeleting(false);
+    }
+  };
   const handleChange = e => { const {name,value} = e.target; if (name.startsWith('address.')) { const k = name.split('.')[1]; setForm(f=>({...f,address:{...f.address,[k]:value}})); } else setForm(f=>({...f,[name]:value})); };
   const handleSubmit = async (e) => { e.preventDefault(); setLoading(true); try { await updateProfile(form); toast.success('Profile updated!'); } catch { toast.error('Update failed.'); } finally { setLoading(false); } };
   return (
@@ -32,6 +52,13 @@ export default function Profile() {
             </div>
             <button type="submit" className="btn btn-primary" disabled={loading}>{loading?'Saving...':'Save Changes'}</button>
           </form>
+          <div style={{marginTop:'32px',paddingTop:'24px',borderTop:'1px solid var(--border)'}}>
+            <p style={{fontSize:'13px',fontWeight:'700',letterSpacing:'1px',textTransform:'uppercase',color:'var(--error)',marginBottom:'8px'}}>Danger Zone</p>
+            <p style={{fontSize:'13px',color:'var(--text-light)',marginBottom:'16px'}}>Permanently delete your account and all your data. This cannot be undone.</p>
+            <button onClick={handleDeleteAccount} disabled={deleting} style={{background:'none',border:'1.5px solid var(--error)',color:'var(--error)',padding:'10px 20px',borderRadius:'var(--radius)',fontSize:'13px',fontWeight:'600',cursor:'pointer'}}>
+              {deleting ? 'Deleting...' : 'Delete My Account'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

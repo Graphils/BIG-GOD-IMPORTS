@@ -64,4 +64,14 @@ router.get('/:id', protect, async (req, res) => {
   }
 });
 
+// DELETE /api/orders/clear-delivered
+router.delete('/clear-delivered', protect, async (req, res) => {
+  try {
+    await Order.deleteMany({ user: req.user._id, status: 'delivered' });
+    res.json({ success: true, message: 'Delivered orders cleared.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to clear orders.' });
+  }
+});
+
 module.exports = router;
