@@ -29,11 +29,11 @@ const limiter = rateLimit({
   message: { success: false, message: 'Too many requests, please try again later.' }
 });
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 50,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { success: false, message: 'Too many auth attempts, please try again later.' }
+  message: { success: false, message: 'Too many auth attempts, please try again in an hour.' }
 });
 app.use('/api/', limiter);
 app.use('/api/auth/', authLimiter);
