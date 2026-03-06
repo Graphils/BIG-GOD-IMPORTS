@@ -22,15 +22,16 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
 
   const handleStatusUpdate = async () => {
     setLoading(true);
-    try {
-      await api.put(`/admin/orders/${order._id}/status`, { status: newStatus, note, shippingCost: Number(shippingCost) });
-      toast.success('Order updated!');
-      onUpdate();
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.message || 'Failed to update order.');
-      setLoading(false);
-    }
+    api.put(`/admin/orders/${order._id}/status`, { status: newStatus, note, shippingCost: Number(shippingCost) })
+      .then(() => {
+        toast.success('Order updated!');
+        onUpdate();
+      })
+      .catch(err => {
+        console.error(err);
+        toast.error(err.response?.data?.message || 'Failed to update order.');
+        setLoading(false);
+      });
   };
 
   return (
