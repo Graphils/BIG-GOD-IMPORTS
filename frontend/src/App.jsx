@@ -31,6 +31,8 @@ const AdminDeliveryFees = lazy(() => import('./pages/admin/DeliveryFees'));
 const PreOrder = lazy(() => import('./pages/PreOrder'));
 const PreOrderCheckout = lazy(() => import('./pages/PreOrderCheckout'));
 const PreOrderCartPage = lazy(() => import('./pages/PreOrderCartPage'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -57,6 +59,8 @@ function AppLayout() {
             <Route path="/pre-order" element={<PreOrder />} />
             <Route path="/pre-order-checkout" element={<ProtectedRoute><PreOrderCheckout /></ProtectedRoute>} />
             <Route path="/pre-order-cart" element={<ProtectedRoute><PreOrderCartPage /></ProtectedRoute>} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
