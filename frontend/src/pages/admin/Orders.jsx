@@ -26,7 +26,7 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
     try {
       await api.put(`/admin/orders/${order._id}/status`, { status: newStatus, note, shippingCost: Number(shippingCost) });
       toast.success('Order updated! Customer notified by email.');
-      onUpdate();
+      await onUpdate();
     } catch { toast.error('Failed to update order.'); } finally { setLoading(false); }
   };
 
@@ -146,7 +146,7 @@ export default function AdminOrders() {
 
   const fetchOrders = () => {
     setLoading(true);
-    api.get('/admin/orders', { params: { page, status: statusFilter, limit: 20 } })
+    return api.get('/admin/orders', { params: { page, status: statusFilter, limit: 20 } })
       .then(r => { setOrders(r.data.orders); setPages(r.data.pages); setTotal(r.data.total); })
       .catch(() => {}).finally(() => setLoading(false));
   };
@@ -250,7 +250,7 @@ export default function AdminOrders() {
         <OrderDetailModal
           order={selectedOrder}
           onClose={() => setSelectedOrder(null)}
-          onUpdate={() => { setSelectedOrder(null); fetchOrders(); }}
+          onUpdate={async () => { await fetchOrders(); setSelectedOrder(null); }}
         />
       )}
     </div>
