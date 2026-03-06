@@ -17,7 +17,7 @@ export default function TermsAndConditions() {
         <p>Welcome to <strong>BIG-GOD IMPORTS</strong>. By accessing or using our website and placing orders, you agree to be bound by these Terms and Conditions. Please read them carefully before making a purchase.</p>
 
         <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--navy)', fontSize: '22px', marginTop: '36px', marginBottom: '12px' }}>1. About Us</h2>
-        <p>BIG-GOD IMPORTS is an e-commerce store based in Ghana, selling quality imported goods delivered across all 16 regions. We are owned and operated by Ephraim Akoto Nana Yaw.</p>
+        <p>BIG-GOD IMPORTS is an e-commerce store based in Ghana, selling quality imported goods delivered across all 16 regions. We are owned and operated by Ephraim Akoto Nana Yaw, with business operations supported by Prosper Senyo Adzei.</p>
 
         <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--navy)', fontSize: '22px', marginTop: '36px', marginBottom: '12px' }}>2. Orders & Payments</h2>
         <ul style={{ paddingLeft: '24px', marginTop: '8px' }}>
