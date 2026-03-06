@@ -37,8 +37,11 @@ export default function Footer() {
             <ul>
               <li><Link to="/">Home</Link></li>
               <li><Link to="/shop">Shop</Link></li>
+              <li><Link to="/pre-order">Pre-Order</Link></li>
               <li><Link to="/contact">Contact</Link></li>
               <li><Link to="/orders">Track Order</Link></li>
+              <li><Link to="/privacy-policy">Privacy Policy</Link></li>
+              <li><Link to="/terms">Terms &amp; Conditions</Link></li>
             </ul>
           </div>
 
