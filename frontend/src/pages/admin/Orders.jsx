@@ -21,13 +21,19 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
   const [loading, setLoading] = useState(false);
 
   const handleStatusUpdate = async () => {
-    if (newStatus === order.status && !note && shippingCost === order.shippingCost) { toast.error('No changes to save.'); return; }
     setLoading(true);
     try {
-      await api.put(`/admin/orders/${order._id}/status`, { status: newStatus, note, shippingCost: Number(shippingCost) });
-      toast.success('Order updated! Customer notified by email.');
-      await onUpdate();
-    } catch { toast.error('Failed to update order.'); } finally { setLoading(false); }
+      const res = await api.put(`/admin/orders/${order._id}/status`, { status: newStatus, note, shippingCost: Number(shippingCost) });
+      if (res.data.success) {
+        toast.success('Order updated!');
+        onUpdate();
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Failed to update order.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -250,7 +256,9 @@ export default function AdminOrders() {
         <OrderDetailModal
           order={selectedOrder}
           onClose={() => setSelectedOrder(null)}
-          onUpdate={async () => { await fetchOrders(); setSelectedOrder(null); }}
+          onUpdate={() => {
+            fetchOrders().then(() => setSelectedOrder(null));
+          }}
         />
       )}
     </div>

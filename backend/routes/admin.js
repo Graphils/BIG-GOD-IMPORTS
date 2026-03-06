@@ -176,8 +176,9 @@ router.put('/orders/:id/status', async (req, res) => {
       order.total = order.subtotal + Number(shippingCost);
     }
     await order.save();
-    try { await sendOrderStatusEmail(order.user, order, status); } catch(e) { console.error('Email err:', e.message); }
     res.json({ success: true, order });
+    // Send email after response (non-blocking)
+    sendOrderStatusEmail(order.user, order, status).catch(e => console.error('Email err:', e.message));
   } catch (err) {
     console.error('Order update error:', err);
     res.status(500).json({ success: false, message: err.message || 'Error updating order.' });
