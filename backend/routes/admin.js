@@ -81,6 +81,7 @@ router.post('/products', upload.array('images', 5), async (req, res) => {
   try {
     const { name, description, shortDescription, price, comparePrice, category, subcategory, brand, stock, lowStockThreshold, tags, isFeatured, weight, isPreOrder, preOrderNote, expectedDate } = req.body;
     if (!name || !price || !category || !description) return res.status(400).json({ success: false, message: 'Name, price, category, description required.' });
+    if (name?.length > 200 || description?.length > 5000) return res.status(400).json({ success: false, message: 'Input too long.' });
     const images = [];
     if (req.files && req.files.length) {
       for (let i = 0; i < req.files.length; i++) {

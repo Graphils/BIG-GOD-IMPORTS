@@ -22,6 +22,7 @@ async function verifyRecaptcha(token) {
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password, firstName, lastName, phone, captchaToken } = req.body;
+    if (!password || password.length < 8) return res.status(400).json({ success: false, message: 'Password must be at least 8 characters.' });
     if (!username || !email || !password) return res.status(400).json({ success: false, message: 'Username, email and password are required.' });
     if (password.length < 8) return res.status(400).json({ success: false, message: 'Password must be at least 8 characters.' });
     const captchaOk = await verifyRecaptcha(captchaToken);
