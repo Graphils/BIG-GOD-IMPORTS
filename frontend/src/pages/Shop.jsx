@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import api from '../utils/api';
 import ProductCard from '../components/product/ProductCard';
 import './Shop.css';
-
 const SORT_OPTIONS = [
   { value: 'createdAt-desc', label: 'Newest First' },
   { value: 'price-asc', label: 'Price: Low to High' },
@@ -11,7 +10,6 @@ const SORT_OPTIONS = [
   { value: 'rating-desc', label: 'Top Rated' },
   { value: 'popular-desc', label: 'Most Popular' },
 ];
-
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
@@ -20,7 +18,6 @@ export default function Shop() {
   const [pages, setPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [filtersOpen, setFiltersOpen] = useState(false);
-
   const page = Number(searchParams.get('page')) || 1;
   const category = searchParams.get('category') || '';
   const search = searchParams.get('search') || '';
@@ -28,18 +25,22 @@ export default function Shop() {
   const minPrice = searchParams.get('minPrice') || '';
   const maxPrice = searchParams.get('maxPrice') || '';
   const inStock = searchParams.get('inStock') === 'true';
-
   const setParam = (key, val) => {
     const newParams = new URLSearchParams(searchParams);
     if (val) newParams.set(key, val); else newParams.delete(key);
-    newParams.set('page', '1');
+    // Only reset to page 1 when filters change, NOT when changing page
+    if (key !== 'page') newParams.set('page', '1');
     setSearchParams(newParams);
   };
-
+  const goToPage = (p) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('page', String(p));
+    setSearchParams(newParams);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   useEffect(() => {
     api.get('/products/categories').then(r => setCategories(r.data.categories || [])).catch(() => {});
   }, []);
-
   useEffect(() => {
     setLoading(true);
     const [sortField, sortOrder] = sort.split('-');
@@ -48,7 +49,6 @@ export default function Shop() {
       .catch(() => setProducts([]))
       .finally(() => setLoading(false));
   }, [searchParams]);
-
   return (
     <div>
       <div className="page-title">
@@ -58,7 +58,6 @@ export default function Shop() {
           {search && <p style={{color:'rgba(255,255,255,0.6)',marginTop:'8px'}}>Results for: <strong style={{color:'var(--gold)'}}>{search}</strong></p>}
         </div>
       </div>
-
       <div className="container shop-layout">
         {/* SIDEBAR FILTERS */}
         <aside className={`shop-sidebar${filtersOpen ? ' open' : ''}`}>
@@ -94,7 +93,6 @@ export default function Shop() {
             <button className="btn btn-outline btn-sm" onClick={() => setSearchParams({})} style={{marginTop:'16px',width:'100%'}}>Clear All Filters</button>
           )}
         </aside>
-
         {/* MAIN CONTENT */}
         <div className="shop-main">
           <div className="shop-toolbar">
@@ -109,7 +107,6 @@ export default function Shop() {
               </button>
             </div>
           </div>
-
           {loading ? <div className="spinner" /> : products.length > 0 ? (
             <>
               <div className="products-grid">
@@ -117,12 +114,16 @@ export default function Shop() {
               </div>
               {pages > 1 && (
                 <div className="pagination">
-                  {page > 1 && <button onClick={() => setParam('page', page-1)}>←</button>}
-                  {Array.from({length: Math.min(pages,7)}, (_,i) => {
+                  {page > 1 && <button onClick={() => goToPage(page - 1)}>
+←
+</button>}
+                  {Array.from({length: Math.min(pages, 7)}, (_, i) => {
                     const p = i + 1;
-                    return <button key={p} className={page === p ? 'active' : ''} onClick={() => setParam('page', p)}>{p}</button>;
+                    return <button key={p} className={page === p ? 'active' : ''} onClick={() => goToPage(p)}>{p}</button>;
                   })}
-                  {page < pages && <button onClick={() => setParam('page', page+1)}>→</button>}
+                  {page < pages && <button onClick={() => goToPage(page + 1)}>
+→
+</button>}
                 </div>
               )}
             </>
