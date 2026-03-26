@@ -26,7 +26,7 @@ export default function PreOrderCheckout() {
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [loading, setLoading] = useState(false);
   const [deliveryFees, setDeliveryFees] = useState({});
-  const [shippingCost, setShippingCost] = useState(0);
+  const [deliveryCost, setDeliveryCost] = useState(0);
   const [address, setAddress] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
@@ -39,7 +39,7 @@ export default function PreOrderCheckout() {
   });
 
   const items = cart?.items?.filter(i => i.product) || [];
-  const total = cartTotal + shippingCost;
+  const total = cartTotal + deliveryCost;
 
   useEffect(() => {
     api.get('/pre-order-delivery-fees')
@@ -56,7 +56,7 @@ export default function PreOrderCheckout() {
     setAddress(a => ({ ...a, [name]: value }));
     if (name === 'region') {
       const fee = deliveryFees[value];
-      setShippingCost(fee !== undefined ? fee : 0);
+      setDeliveryCost(fee !== undefined ? fee : 0);
     }
   };
 
@@ -79,7 +79,7 @@ export default function PreOrderCheckout() {
           items: items.map(i => ({ product: i.product._id, quantity: i.quantity })),
           shippingAddress: address,
           paymentMethod,
-          shippingCost
+          shippingCost: deliveryCost
         },
         callbackUrl: `${window.location.origin}/payment/callback`
       });
@@ -97,7 +97,7 @@ export default function PreOrderCheckout() {
         <div className="container">
           <h1>Pre-Order Checkout</h1>
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', marginTop: '6px' }}>
-            Complete your pre-order — shipping fee applies based on your region.
+            Complete your pre-order — delivery fee applies based on your region.
           </p>
         </div>
       </div>
@@ -105,7 +105,7 @@ export default function PreOrderCheckout() {
       <div style={{ background: '#f3e5f5', borderBottom: '1px solid #ce93d8', padding: '12px 0' }}>
         <div className="container">
           <p style={{ fontSize: '13px', color: '#6a1b9a', fontWeight: '600' }}>
-            📦 Pre-Order — Pay now and your item will be shipped once it arrives in stock. You'll be notified by email.
+            📦 Pre-Order — Pay now and your item will be delivered once it arrives in stock. You'll be notified by email.
           </p>
         </div>
       </div>
@@ -147,14 +147,14 @@ export default function PreOrderCheckout() {
                     </option>
                   ))}
                 </select>
-                {address.region && shippingCost > 0 && (
+                {address.region && deliveryCost > 0 && (
                   <p style={{ fontSize: '13px', color: 'var(--gold)', marginTop: '6px', fontWeight: '600' }}>
-                    🚚 Shipping to {address.region}: GHS {shippingCost.toFixed(2)}
+                    🚚 Delivery to {address.region}: GHS {deliveryCost.toFixed(2)}
                   </p>
                 )}
-                {address.region && shippingCost === 0 && (
+                {address.region && deliveryCost === 0 && (
                   <p style={{ fontSize: '13px', color: '#1a7a4a', marginTop: '6px', fontWeight: '600' }}>
-                    ✅ Free shipping to {address.region}!
+                    ✅ Free delivery to {address.region}!
                   </p>
                 )}
               </div>
@@ -219,22 +219,24 @@ export default function PreOrderCheckout() {
           </div>
           <div className="summary-divider"></div>
           <div className="summary-row">
-            <span>Subtotal</span><span>GHS {cartTotal.toFixed(2)}</span>
+            <span>Subtotal</span>
+            <span>GHS {cartTotal.toFixed(2)}</span>
           </div>
           <div className="summary-row">
-            <span>Shipping</span>
+            <span>Delivery</span>
             <span>
               {!address.region
                 ? <span style={{ color: 'var(--text-light)', fontSize: '13px' }}>Select region</span>
-                : shippingCost === 0
+                : deliveryCost === 0
                   ? <span style={{ color: '#1a7a4a', fontWeight: '600' }}>Free</span>
-                  : <span>GHS {shippingCost.toFixed(2)}</span>
+                  : <span>GHS {deliveryCost.toFixed(2)}</span>
               }
             </span>
           </div>
           <div className="summary-divider"></div>
           <div className="summary-row summary-total">
-            <span>Total</span><span>GHS {total.toFixed(2)}</span>
+            <span>Total</span>
+            <span>GHS {total.toFixed(2)}</span>
           </div>
           <button
             className="btn btn-gold"
