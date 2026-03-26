@@ -1,80 +1,124 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '../../utils/api';
-
+import '../../styles/admin.css';
 const REGIONS = ['Greater Accra','Ashanti','Western','Central','Eastern','Northern','Upper East','Upper West','Volta','Brong-Ahafo','North East','Savannah','Oti','Bono East','Ahafo','Western North'];
-
-export default function DeliveryFees() {
+function FeesTab({ title, fetchUrl, saveUrl, color = 'var(--navy)', note }) {
   const [fees, setFees] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
   useEffect(() => {
-    api.get('/delivery-fees').then(r => setFees(r.data.fees || {})).catch(() => {}).finally(() => setLoading(false));
-  }, []);
-
+    api.get(fetchUrl)
+      .then(r => setFees(r.data.fees || {}))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [fetchUrl]);
   const handleChange = (region, value) => {
-    setFees(f => ({ ...f, [region]: value === '' ? 0 : Number(value) }));
+    setFees(f => ({ ...f, [region]: value === '' ? '' : Number(value) }));
   };
-
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.put('/admin/delivery-fees', { fees });
-      toast.success('Delivery fees saved!');
-    } catch { toast.error('Failed to save fees.'); } finally { setSaving(false); }
+      const cleanFees = {};
+      REGIONS.forEach(r => { cleanFees[r] = Number(fees[r]) || 0; });
+      await api.put(saveUrl, { fees: cleanFees });
+      toast.success(`${title} updated!`);
+    } catch {
+      toast.error('Failed to save.');
+    } finally { setSaving(false); }
   };
-
-  if (loading) return <div className="loading-page"><div className="spinner"/></div>;
-
+  if (loading) return <div className="loading-page"><div className="spinner" /></div>;
   return (
-    <div style={{ background: 'var(--cream)', minHeight: '100vh' }}>
-      <div style={{ background: 'var(--navy)', padding: '32px 0' }}>
+    <div>
+      {note && (
+        <div style={{ background: '#f0f7ff', border: '1px solid #b3d4f5', borderRadius: 'var(--radius)', padding: '12px 16px', marginBottom: '24px', fontSize: '13px', color: '#1a5c9a' }}>
+          {note}
+        </div>
+      )}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
+        {REGIONS.map(region => (
+          <div key={region} style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+            <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--navy)', flex: 1 }}>{region}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '13px', color: 'var(--text-light)' }}>GHS</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={fees[region] ?? ''}
+                onChange={e => handleChange(region, e.target.value)}
+                style={{ width: '80px', padding: '6px 10px', border: '1.5px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '14px', fontWeight: '600', color, textAlign: 'right' }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      <button
+        className="btn btn-primary"
+        style={{ marginTop: '24px' }}
+        onClick={handleSave}
+        disabled={saving}
+      >
+        {saving ? 'Saving...' : `Save ${title}`}
+      </button>
+    </div>
+  );
+}
+export default function AdminDeliveryFees() {
+  const [tab, setTab] = useState('regular');
+  return (
+    <div className="admin-page">
+      <div className="admin-header">
         <div className="container">
           <span className="section-label">Administration</span>
-          <h1 style={{ color: 'var(--white)', fontSize: 'clamp(22px,3vw,32px)', margin: '8px 0 4px' }}>Delivery Fees</h1>
-          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>Set delivery fees per region. Customers will see the fee when they select their region at checkout.</p>
+          <h1>Delivery Fee Management</h1>
+          <p>Set shipping fees per region for regular and pre-order items.</p>
         </div>
       </div>
-      <div className="container" style={{ padding: '32px 24px', maxWidth: '700px' }}>
-        <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: 'var(--navy)' }}>
-                <th style={{ padding: '14px 20px', textAlign: 'left', color: 'var(--gold)', fontSize: '11px', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Region</th>
-                <th style={{ padding: '14px 20px', textAlign: 'left', color: 'var(--gold)', fontSize: '11px', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Delivery Fee (GHS)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {REGIONS.map((region, i) => (
-                <tr key={region} style={{ borderBottom: '1px solid var(--border)', background: i % 2 === 0 ? 'var(--white)' : 'var(--cream)' }}>
-                  <td style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--navy)', fontSize: '14px' }}>{region}</td>
-                  <td style={{ padding: '12px 20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ color: 'var(--text-light)', fontSize: '14px' }}>GHS</span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.50"
-                        value={fees[region] !== undefined ? fees[region] : ''}
-                        onChange={e => handleChange(region, e.target.value)}
-                        placeholder="0.00"
-                        style={{ width: '100px', padding: '8px 10px', border: '1.5px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '14px', fontWeight: '600', color: 'var(--navy)' }}
-                      />
-                      {fees[region] === 0 && <span style={{ fontSize: '12px', color: '#1a7a4a', fontWeight: '600' }}>FREE</span>}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div style={{ marginTop: '24px', display: 'flex', gap: '12px' }}>
-          <button className="btn btn-primary" onClick={handleSave} disabled={saving} style={{ minWidth: '160px' }}>
-            {saving ? 'Saving...' : 'Save All Fees'}
+      <div className="container" style={{ padding: '32px 24px' }}>
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '28px', borderBottom: '2px solid var(--border)', paddingBottom: '0' }}>
+          <button
+            onClick={() => setTab('regular')}
+            style={{
+              padding: '10px 24px', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '600',
+              background: 'none', borderBottom: tab === 'regular' ? '2px solid var(--navy)' : '2px solid transparent',
+              color: tab === 'regular' ? 'var(--navy)' : 'var(--text-light)', marginBottom: '-2px', transition: 'all 0.2s'
+            }}
+          >
+
+ Regular Delivery
           </button>
-          <p style={{ fontSize: '13px', color: 'var(--text-light)', alignSelf: 'center' }}>Set a fee to 0 for free delivery to that region.</p>
+          <button
+            onClick={() => setTab('preorder')}
+            style={{
+              padding: '10px 24px', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '600',
+              background: 'none', borderBottom: tab === 'preorder' ? '2px solid #6a1b9a' : '2px solid transparent',
+              color: tab === 'preorder' ? '#6a1b9a' : 'var(--text-light)', marginBottom: '-2px', transition: 'all 0.2s'
+            }}
+          >
+
+ Pre-Order Shipping
+          </button>
         </div>
+        {tab === 'regular' && (
+          <FeesTab
+            title="Regular Delivery Fees"
+            fetchUrl="/delivery-fees"
+            saveUrl="/admin/delivery-fees"
+            color="var(--navy)"
+            note="These fees apply to regular in-stock items at checkout."
+          />
+        )}
+        {tab === 'preorder' && (
+          <FeesTab
+            title="Pre-Order Shipping Fees"
+            fetchUrl="/pre-order-delivery-fees"
+            saveUrl="/admin/pre-order-delivery-fees"
+            color="#6a1b9a"
+            note="These shipping fees apply to pre-order items at checkout. Set to 0 for free shipping on any region."
+          />
+        )}
       </div>
     </div>
   );

@@ -1,82 +1,54 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
 const Product = require('../models/Product');
 const Order = require('../models/Order');
 const User = require('../models/User');
 const Review = require('../models/Review');
 const Settings = require('../models/Settings');
 const { protect, adminOnly } = require('../middleware/auth');
-const { upload, uploadToCloudinary, deleteFromCloudinary } = require('../utils/cloudinary');
 const { sendOrderStatusEmail } = require('../utils/email');
-
-router.use(protect, adminOnly);
-
-const DEFAULT_DELIVERY_FEES = {
-  'Greater Accra': 20,
-  'Ashanti': 40,
-  'Western': 50,
-  'Central': 45,
-  'Eastern': 40,
-  'Northern': 80,
-  'Upper East': 90,
-  'Upper West': 90,
-  'Volta': 55,
-  'Brong-Ahafo': 60,
-  'North East': 85,
-  'Savannah': 85,
-  'Oti': 65,
-  'Bono East': 65,
-  'Ahafo': 60,
-  'Western North': 70
-};
-
-// UPDATE delivery fees (admin only)
-router.put('/delivery-fees', async (req, res) => {
-  try {
-    const { fees } = req.body;
-    await Settings.findOneAndUpdate(
-      { key: 'delivery_fees' },
-      { key: 'delivery_fees', value: fees },
-      { upsert: true, new: true }
-    );
-    res.json({ success: true, fees });
-  } catch (err) { res.status(500).json({ success: false, message: 'Error saving fees.' }); }
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
-
-// Dashboard stats
+const storage = multer.memoryStorage();
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+const uploadToCloudinary = (buffer) => new Promise((resolve, reject) => {
+  const stream = cloudinary.uploader.upload_stream({ folder: 'biggod-imports' }, (err, result) => {
+    if (err) reject(err); else resolve(result);
+  });
+  stream.end(buffer);
+});
+router.use(protect, adminOnly);
+// DASHBOARD STATS
 router.get('/stats', async (req, res) => {
   try {
-    const [totalOrders, totalProducts, totalUsers, revenue] = await Promise.all([
+    const [totalOrders, totalProducts, totalUsers, recentOrders] = await Promise.all([
       Order.countDocuments(),
       Product.countDocuments({ isActive: true }),
       User.countDocuments({ role: 'user' }),
-      Order.aggregate([{ $match: { paymentStatus: 'paid' } }, { $group: { _id: null, total: { $sum: '$total' } } }])
+      Order.find().sort({ createdAt: -1 }).limit(5).populate('user', 'firstName lastName email')
     ]);
-    const recentOrders = await Order.find().sort({ createdAt: -1 }).limit(5).populate('user','username email');
-    const lowStockProducts = await Product.find({ stockStatus: { $in: ['low_stock','out_of_stock'] }, isActive: true }).limit(10);
-    res.json({ success: true, stats: {
-      totalOrders, totalProducts, totalUsers,
-      totalRevenue: revenue[0]?.total || 0,
-      recentOrders, lowStockProducts
-    }});
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Error fetching stats.' });
-  }
-});
-
-// PRODUCT MANAGEMENT
-router.get('/products', async (req, res) => {
-  try {
-    const { page=1, limit=20, search, category } = req.query;
-    const query = { isActive: true };
-    if (search) query.name = new RegExp(search,'i');
-    if (category) query.category = category;
-    const total = await Product.countDocuments(query);
-    const products = await Product.find(query).sort({ createdAt: -1 }).skip((page-1)*limit).limit(Number(limit));
-    res.json({ success: true, products, total, pages: Math.ceil(total/limit) });
+    const revenue = await Order.aggregate([
+      { $match: { status: { $in: ['confirmed','processing','shipped','delivered'] } } },
+      { $group: { _id: null, total: { $sum: '$total' } } }
+    ]);
+    res.json({ success: true, stats: { totalOrders, totalProducts, totalUsers, revenue: revenue[0]?.total || 0, recentOrders } });
   } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
 });
-
+// PRODUCTS
+router.get('/products', async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search } = req.query;
+    const query = search ? { name: { $regex: search, $options: 'i' } } : {};
+    const products = await Product.find(query).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(Number(limit));
+    const total = await Product.countDocuments(query);
+    res.json({ success: true, products, total, pages: Math.ceil(total / limit) });
+  } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
+});
 router.post('/products', upload.array('images', 5), async (req, res) => {
   try {
     const { name, description, shortDescription, price, comparePrice, category, subcategory, brand, stock, lowStockThreshold, tags, isFeatured, weight, isPreOrder, preOrderNote, expectedDate } = req.body;
@@ -105,7 +77,6 @@ router.post('/products', upload.array('images', 5), async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to create product.' });
   }
 });
-
 router.put('/products/:id', upload.array('images', 5), async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -130,38 +101,39 @@ router.put('/products/:id', upload.array('images', 5), async (req, res) => {
     res.status(500).json({ success: false, message: 'Update failed.' });
   }
 });
-
-router.patch('/products/:id/stock', async (req, res) => {
+router.delete('/products/:id', async (req, res) => {
   try {
-    const { stock, lowStockThreshold } = req.body;
     const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ success: false, message: 'Not found.' });
-    if (stock !== undefined) product.stock = Number(stock);
-    if (lowStockThreshold !== undefined) product.lowStockThreshold = Number(lowStockThreshold);
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found.' });
+    if (product.images?.length) {
+      for (const img of product.images) {
+        if (img.publicId) await cloudinary.uploader.destroy(img.publicId).catch(() => {});
+      }
+    }
+    await product.deleteOne();
+    res.json({ success: true, message: 'Product deleted.' });
+  } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
+});
+router.delete('/products/:id/image/:publicId', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found.' });
+    await cloudinary.uploader.destroy(decodeURIComponent(req.params.publicId)).catch(() => {});
+    product.images = product.images.filter(img => img.publicId !== decodeURIComponent(req.params.publicId));
     await product.save();
     res.json({ success: true, product });
   } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
 });
-
-router.delete('/products/:id', async (req, res) => {
-  try {
-    const product = await Product.findByIdAndUpdate(req.params.id, { isActive: false }, { new: true });
-    if (!product) return res.status(404).json({ success: false, message: 'Not found.' });
-    res.json({ success: true, message: 'Product deactivated.' });
-  } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
-});
-
-// ORDER MANAGEMENT
+// ORDERS
 router.get('/orders', async (req, res) => {
   try {
-    const { page=1, limit=20, status } = req.query;
+    const { page = 1, limit = 20, status } = req.query;
     const query = status ? { status } : {};
+    const orders = await Order.find(query).sort({ createdAt: -1 }).skip((page-1)*limit).limit(Number(limit)).populate('user','firstName lastName email phone');
     const total = await Order.countDocuments(query);
-    const orders = await Order.find(query).sort({ createdAt: -1 }).skip((page-1)*limit).limit(Number(limit)).populate('user','username email phone');
     res.json({ success: true, orders, total, pages: Math.ceil(total/limit) });
   } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
 });
-
 router.put('/orders/:id/status', async (req, res) => {
   try {
     const { status, note, shippingCost } = req.body;
@@ -184,35 +156,6 @@ router.put('/orders/:id/status', async (req, res) => {
     res.status(500).json({ success: false, message: err.message || 'Error updating order.' });
   }
 });
-
-// USER MANAGEMENT
-router.get('/users', async (req, res) => {
-  try {
-    const users = await User.find({ role: 'user' }).sort({ createdAt: -1 }).select('-password');
-    res.json({ success: true, users });
-  } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
-});
-
-// REVIEWS
-router.get('/reviews', async (req, res) => {
-  try {
-    const reviews = await Review.find({ isApproved: false }).populate('user','username').populate('product','name');
-    res.json({ success: true, reviews });
-  } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
-});
-
-router.patch('/reviews/:id/approve', async (req, res) => {
-  try {
-    const review = await Review.findByIdAndUpdate(req.params.id, { isApproved: true }, { new: true });
-    if (!review) return res.status(404).json({ success: false, message: 'Not found.' });
-    // Update product rating
-    const reviews = await Review.find({ product: review.product, isApproved: true });
-    const avg = reviews.reduce((a,b) => a + b.rating, 0) / reviews.length;
-    await Product.findByIdAndUpdate(review.product, { 'ratings.average': Math.round(avg*10)/10, 'ratings.count': reviews.length });
-    res.json({ success: true, review });
-  } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
-});
-
 // DELETE /api/admin/orders/clear - clear all delivered/cancelled orders
 router.delete('/orders/clear', async (req, res) => {
   try {
@@ -222,5 +165,58 @@ router.delete('/orders/clear', async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to clear orders.' });
   }
 });
-
+// USER MANAGEMENT
+router.get('/users', async (req, res) => {
+  try {
+    const users = await User.find({ role: 'user' }).sort({ createdAt: -1 }).select('-password');
+    res.json({ success: true, users });
+  } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
+});
+// REVIEWS
+router.get('/reviews', async (req, res) => {
+  try {
+    const reviews = await Review.find({ isApproved: false }).populate('user','username').populate('product','name');
+    res.json({ success: true, reviews });
+  } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
+});
+router.patch('/reviews/:id/approve', async (req, res) => {
+  try {
+    const review = await Review.findByIdAndUpdate(req.params.id, { isApproved: true }, { new: true });
+    if (!review) return res.status(404).json({ success: false, message: 'Not found.' });
+    const reviews = await Review.find({ product: review.product, isApproved: true });
+    const avg = reviews.reduce((a,b) => a + b.rating, 0) / reviews.length;
+    await Product.findByIdAndUpdate(review.product, { 'ratings.average': Math.round(avg*10)/10, 'ratings.count': reviews.length });
+    res.json({ success: true, review });
+  } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
+});
+router.delete('/reviews/:id', async (req, res) => {
+  try {
+    await Review.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ success: false, message: 'Error.' }); }
+});
+// DELIVERY FEES
+router.put('/delivery-fees', async (req, res) => {
+  try {
+    const { fees } = req.body;
+    await Settings.findOneAndUpdate(
+      { key: 'delivery_fees' },
+      { key: 'delivery_fees', value: fees },
+      { upsert: true, new: true }
+    );
+    res.json({ success: true, fees });
+  } catch (err) { res.status(500).json({ success: false, message: 'Error saving delivery fees.' }); }
+});
+// PRE-ORDER DELIVERY FEES
+router.put('/pre-order-delivery-fees', async (req, res) => {
+  try {
+    const { fees } = req.body;
+    await Settings.findOneAndUpdate(
+      { key: 'preorder_delivery_fees' },
+      { key: 'preorder_delivery_fees', value: fees },
+      { upsert: true, new: true }
+    );
+    res.json({ success: true, fees });
+  } catch (err) { res.status(500).json({ success: false, message: 'Error saving pre-order delivery fees.' }); }
+});
 module.exports = router;
