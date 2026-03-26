@@ -1,140 +1,253 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+import { usePreOrderCart } from '../context/PreOrderCartContext';
+import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
-import ProductCard from '../components/product/ProductCard';
-import './Shop.css';
-const SORT_OPTIONS = [
-  { value: 'createdAt-desc', label: 'Newest First' },
-  { value: 'price-asc', label: 'Price: Low to High' },
-  { value: 'price-desc', label: 'Price: High to Low' },
-  { value: 'rating-desc', label: 'Top Rated' },
-  { value: 'popular-desc', label: 'Most Popular' },
+import './Checkout.css';
+
+const REGIONS = [
+  'Greater Accra','Ashanti','Western','Central','Eastern','Northern',
+  'Upper East','Upper West','Volta','Brong-Ahafo','North East',
+  'Savannah','Oti','Bono East','Ahafo','Western North'
 ];
-export default function Shop() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [pages, setPages] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const page = Number(searchParams.get('page')) || 1;
-  const category = searchParams.get('category') || '';
-  const search = searchParams.get('search') || '';
-  const sort = searchParams.get('sort') || 'createdAt-desc';
-  const minPrice = searchParams.get('minPrice') || '';
-  const maxPrice = searchParams.get('maxPrice') || '';
-  const inStock = searchParams.get('inStock') === 'true';
-  const setParam = (key, val) => {
-    const newParams = new URLSearchParams(searchParams);
-    if (val) newParams.set(key, val); else newParams.delete(key);
-    // Only reset to page 1 when filters change, NOT when changing page
-    if (key !== 'page') newParams.set('page', '1');
-    setSearchParams(newParams);
-  };
-  const goToPage = (p) => {
-    const newParams = new URLSearchParams(searchParams);
-    newParams.set('page', String(p));
-    setSearchParams(newParams);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+
+const PAYMENT_METHODS = [
+  { id: 'card', label: 'Credit / Debit Card', icon: '💳', desc: 'Visa, Mastercard' },
+  { id: 'mobile_money', label: 'Mobile Money', icon: '📱', desc: 'MTN, Vodafone, AirtelTigo' },
+  { id: 'bank_transfer', label: 'Bank Transfer', icon: '🏦', desc: 'Access Bank Ghana' },
+];
+
+export default function PreOrderCheckout() {
+  const { cart, cartTotal } = usePreOrderCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [loading, setLoading] = useState(false);
+  const [deliveryFees, setDeliveryFees] = useState({});
+  const [shippingCost, setShippingCost] = useState(0);
+  const [address, setAddress] = useState({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    phone: user?.phone || '',
+    street: user?.address?.street || '',
+    city: user?.address?.city || '',
+    region: '',
+    country: 'Ghana',
+    postalCode: ''
+  });
+
+  const items = cart?.items?.filter(i => i.product) || [];
+  const total = cartTotal + shippingCost;
+
   useEffect(() => {
-    api.get('/products/categories').then(r => setCategories(r.data.categories || [])).catch(() => {});
+    api.get('/pre-order-delivery-fees')
+      .then(r => setDeliveryFees(r.data.fees || {}))
+      .catch(() => {});
   }, []);
+
   useEffect(() => {
+    if (!items.length) navigate('/pre-order-cart');
+  }, [items.length]);
+
+  const handleAddressChange = e => {
+    const { name, value } = e.target;
+    setAddress(a => ({ ...a, [name]: value }));
+    if (name === 'region') {
+      const fee = deliveryFees[value];
+      setShippingCost(fee !== undefined ? fee : 0);
+    }
+  };
+
+  const validateAddress = () => {
+    if (!address.firstName || !address.lastName || !address.phone || !address.street || !address.city || !address.region)
+      return 'Please fill in all required fields.';
+    return null;
+  };
+
+  const handlePaystack = async () => {
+    const err = validateAddress();
+    if (err) { toast.error(err); return; }
     setLoading(true);
-    const [sortField, sortOrder] = sort.split('-');
-    api.get('/products', { params: { page, limit: 12, category, search, sort: sortField, order: sortOrder, minPrice, maxPrice, inStock: inStock || '' } })
-      .then(r => { setProducts(r.data.products); setTotal(r.data.total); setPages(r.data.pages); })
-      .catch(() => setProducts([]))
-      .finally(() => setLoading(false));
-  }, [searchParams]);
+    try {
+      const initRes = await api.post('/payments/initialize', {
+        amount: total,
+        email: user.email,
+        paymentMethod,
+        orderData: {
+          items: items.map(i => ({ product: i.product._id, quantity: i.quantity })),
+          shippingAddress: address,
+          paymentMethod,
+          shippingCost
+        },
+        callbackUrl: `${window.location.origin}/payment/callback`
+      });
+      const { authorization_url } = initRes.data.data;
+      window.location.href = authorization_url;
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Payment initialization failed.');
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <div className="page-title">
         <div className="container">
-          <div className="breadcrumb"><a href="/">Home</a><span>/</span><span>Shop</span></div>
-          <h1>Our Products</h1>
-          {search && <p style={{color:'rgba(255,255,255,0.6)',marginTop:'8px'}}>Results for: <strong style={{color:'var(--gold)'}}>{search}</strong></p>}
+          <h1>Pre-Order Checkout</h1>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', marginTop: '6px' }}>
+            Complete your pre-order — shipping fee applies based on your region.
+          </p>
         </div>
       </div>
-      <div className="container shop-layout">
-        {/* SIDEBAR FILTERS */}
-        <aside className={`shop-sidebar${filtersOpen ? ' open' : ''}`}>
-          <div className="sidebar-header">
-            <h3>Filters</h3>
-            <button className="sidebar-close" onClick={() => setFiltersOpen(false)}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
+
+      <div style={{ background: '#f3e5f5', borderBottom: '1px solid #ce93d8', padding: '12px 0' }}>
+        <div className="container">
+          <p style={{ fontSize: '13px', color: '#6a1b9a', fontWeight: '600' }}>
+            📦 Pre-Order — Pay now and your item will be shipped once it arrives in stock. You'll be notified by email.
+          </p>
+        </div>
+      </div>
+
+      <div className="container checkout-layout">
+        <div className="checkout-form">
+          <div className="checkout-section">
+            <h2>Delivery Information</h2>
+            <div className="form-row">
+              <div className="form-group">
+                <label>First Name *</label>
+                <input name="firstName" value={address.firstName} onChange={handleAddressChange} required />
+              </div>
+              <div className="form-group">
+                <label>Last Name *</label>
+                <input name="lastName" value={address.lastName} onChange={handleAddressChange} required />
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Phone Number *</label>
+              <input name="phone" type="tel" value={address.phone} onChange={handleAddressChange} required />
+            </div>
+            <div className="form-group">
+              <label>Street Address *</label>
+              <input name="street" value={address.street} onChange={handleAddressChange} placeholder="House number, street name" required />
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>City *</label>
+                <input name="city" value={address.city} onChange={handleAddressChange} required />
+              </div>
+              <div className="form-group">
+                <label>Region *</label>
+                <select name="region" value={address.region} onChange={handleAddressChange} required>
+                  <option value="">Select region</option>
+                  {REGIONS.map(r => (
+                    <option key={r} value={r}>
+                      {r}{deliveryFees[r] !== undefined ? ` — GHS ${deliveryFees[r].toFixed(2)}` : ''}
+                    </option>
+                  ))}
+                </select>
+                {address.region && shippingCost > 0 && (
+                  <p style={{ fontSize: '13px', color: 'var(--gold)', marginTop: '6px', fontWeight: '600' }}>
+                    🚚 Shipping to {address.region}: GHS {shippingCost.toFixed(2)}
+                  </p>
+                )}
+                {address.region && shippingCost === 0 && (
+                  <p style={{ fontSize: '13px', color: '#1a7a4a', marginTop: '6px', fontWeight: '600' }}>
+                    ✅ Free shipping to {address.region}!
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
-          <div className="filter-group">
-            <h4>Categories</h4>
-            <button className={`filter-cat${!category ? ' active' : ''}`} onClick={() => setParam('category','')}>All Products</button>
-            {categories.map(cat => (
-              <button key={cat} className={`filter-cat${category === cat ? ' active' : ''}`} onClick={() => setParam('category', cat)}>{cat}</button>
+
+          <div className="checkout-section">
+            <h2>Payment Method</h2>
+            <div className="payment-options">
+              {PAYMENT_METHODS.map(m => (
+                <label key={m.id} className={`payment-option${paymentMethod === m.id ? ' selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="payment"
+                    value={m.id}
+                    checked={paymentMethod === m.id}
+                    onChange={() => setPaymentMethod(m.id)}
+                  />
+                  <div className="payment-option-content">
+                    <span className="payment-icon">{m.icon}</span>
+                    <span className="payment-option-label">{m.label}</span>
+                    <span className="payment-option-desc">{m.desc}</span>
+                  </div>
+                </label>
+              ))}
+            </div>
+            <p className="secure-note">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              Secured by Paystack. Your payment information is encrypted and safe.
+            </p>
+          </div>
+        </div>
+
+        <div className="checkout-summary">
+          <h3>Order Summary</h3>
+          <div className="order-items">
+            {items.map(item => (
+              <div key={item.product._id} className="order-item-row">
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  {item.product.images?.[0]?.url && (
+                    <img
+                      src={item.product.images[0].url}
+                      alt={item.product.name}
+                      style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px' }}
+                    />
+                  )}
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--navy)' }}>{item.product.name}</p>
+                    <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>Qty: {item.quantity}</p>
+                    {item.product.expectedDate && (
+                      <p style={{ fontSize: '11px', color: '#6a1b9a', fontWeight: '600' }}>Est: {item.product.expectedDate}</p>
+                    )}
+                  </div>
+                </div>
+                <span style={{ fontSize: '14px', fontWeight: '600' }}>
+                  GHS {(item.product.price * item.quantity).toFixed(2)}
+                </span>
+              </div>
             ))}
           </div>
-          <div className="filter-group">
-            <h4>Price Range (GHS)</h4>
-            <div className="price-range">
-              <input type="number" placeholder="Min" value={minPrice} onChange={e => setParam('minPrice', e.target.value)} min="0" />
-              <span>—</span>
-              <input type="number" placeholder="Max" value={maxPrice} onChange={e => setParam('maxPrice', e.target.value)} min="0" />
-            </div>
+          <div className="summary-divider"></div>
+          <div className="summary-row">
+            <span>Subtotal</span><span>GHS {cartTotal.toFixed(2)}</span>
           </div>
-          <div className="filter-group">
-            <h4>Availability</h4>
-            <label className="filter-check">
-              <input type="checkbox" checked={inStock} onChange={e => setParam('inStock', e.target.checked ? 'true' : '')} />
-              <span>In Stock Only</span>
-            </label>
+          <div className="summary-row">
+            <span>Shipping</span>
+            <span>
+              {!address.region
+                ? <span style={{ color: 'var(--text-light)', fontSize: '13px' }}>Select region</span>
+                : shippingCost === 0
+                  ? <span style={{ color: '#1a7a4a', fontWeight: '600' }}>Free</span>
+                  : <span>GHS {shippingCost.toFixed(2)}</span>
+              }
+            </span>
           </div>
-          {(category || minPrice || maxPrice || inStock) && (
-            <button className="btn btn-outline btn-sm" onClick={() => setSearchParams({})} style={{marginTop:'16px',width:'100%'}}>Clear All Filters</button>
-          )}
-        </aside>
-        {/* MAIN CONTENT */}
-        <div className="shop-main">
-          <div className="shop-toolbar">
-            <p className="results-count"><strong>{total}</strong> product{total !== 1 ? 's' : ''} found</p>
-            <div className="toolbar-right">
-              <select className="sort-select" value={sort} onChange={e => setParam('sort', e.target.value)}>
-                {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-              <button className="filter-toggle btn btn-outline btn-sm" onClick={() => setFiltersOpen(true)}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                Filters
-              </button>
-            </div>
+          <div className="summary-divider"></div>
+          <div className="summary-row summary-total">
+            <span>Total</span><span>GHS {total.toFixed(2)}</span>
           </div>
-          {loading ? <div className="spinner" /> : products.length > 0 ? (
-            <>
-              <div className="products-grid">
-                {products.map(p => <ProductCard key={p._id} product={p} />)}
-              </div>
-              {pages > 1 && (
-                <div className="pagination">
-                  {page > 1 && <button onClick={() => goToPage(page - 1)}>
-←
-</button>}
-                  {Array.from({length: Math.min(pages, 7)}, (_, i) => {
-                    const p = i + 1;
-                    return <button key={p} className={page === p ? 'active' : ''} onClick={() => goToPage(p)}>{p}</button>;
-                  })}
-                  {page < pages && <button onClick={() => goToPage(page + 1)}>
-→
-</button>}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="empty-state">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <h3>No products found</h3>
-              <p>Try adjusting your search or filters.</p>
-              <button className="btn btn-primary" onClick={() => setSearchParams({})}>Clear Filters</button>
-            </div>
-          )}
+          <button
+            className="btn btn-gold"
+            style={{ width: '100%', marginTop: '24px', padding: '16px' }}
+            onClick={handlePaystack}
+            disabled={loading || !address.region}
+          >
+            {loading
+              ? 'Processing...'
+              : !address.region
+                ? 'Select a region first'
+                : `Pre-Order — Pay GHS ${total.toFixed(2)}`}
+          </button>
         </div>
       </div>
     </div>

@@ -30,15 +30,6 @@ export default function PreOrderCartPage() {
         </div>
       </div>
 
-      {/* Notice */}
-      <div style={{ background: '#f3e5f5', borderBottom: '1px solid #ce93d8', padding: '10px 0' }}>
-        <div className="container">
-          <p style={{ fontSize: '13px', color: '#6a1b9a', fontWeight: '600' }}>
-            📦 Delivery is included in the price of all pre-order items. No extra delivery fee at checkout.
-          </p>
-        </div>
-      </div>
-
       <div className="container cart-layout">
         <div className="cart-items">
           <div className="cart-header"><span>Product</span><span>Price</span><span>Quantity</span><span>Total</span></div>
@@ -73,7 +64,7 @@ export default function PreOrderCartPage() {
         <div className="cart-summary">
           <h3>Order Summary</h3>
           <div className="summary-row"><span>Subtotal ({cartCount} items)</span><span>GHS {cartTotal.toFixed(2)}</span></div>
-          <div className="summary-row"><span>Delivery</span><span style={{ color: '#6a1b9a', fontWeight: '700' }}>Included</span></div>
+          <div className="summary-row"><span>Shipping</span><span style={{ color: '#888', fontSize: '13px' }}>Calculated at checkout</span></div>
           <div className="summary-divider"></div>
           <div className="summary-row summary-total"><span>Total</span><span>GHS {cartTotal.toFixed(2)}</span></div>
           <button className="btn btn-gold" style={{ width: '100%', marginTop: '24px' }} onClick={() => navigate('/pre-order-checkout')}>
