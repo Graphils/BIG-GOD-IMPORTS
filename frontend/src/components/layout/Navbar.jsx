@@ -18,7 +18,6 @@ export default function Navbar() {
   const navigate = useNavigate();
   const userMenuRef = useRef(null);
 
-  // Apply dark mode class to body
   useEffect(() => {
     if (dark) {
       document.body.classList.add('dark');
@@ -75,9 +74,19 @@ export default function Navbar() {
       <header className={`navbar${scrolled ? ' scrolled' : ''}`}>
         <div className="container navbar-inner">
 
-          {/* LOGO */}
+          {/* LOGO — round */}
           <Link to="/" className="navbar-logo">
-            <img src="/logo.jpg" alt="Big-God Imports" style={{ height: '52px', width: 'auto', objectFit: 'contain' }} />
+            <img
+              src="/logo.jpg"
+              alt="Big-God Imports"
+              style={{
+                height: '52px',
+                width: '52px',
+                objectFit: 'cover',
+                borderRadius: '50%',
+                border: '2px solid var(--gold)',
+              }}
+            />
           </Link>
 
           {/* NAV LINKS */}
@@ -109,15 +118,17 @@ export default function Navbar() {
           <div className="navbar-actions">
 
             {/* Search */}
-            <button className="icon-btn search-icon-btn" onClick={() => setSearchOpen(s => !s)} aria-label="Search" title="Search">
+            <button className="icon-btn search-icon-btn" onClick={() => setSearchOpen(s => !s)} aria-label="Search">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             </button>
 
             {/* Dark mode toggle */}
             <button className="icon-btn dark-toggle" onClick={() => setDark(d => !d)} aria-label="Toggle dark mode" title={dark ? 'Light mode' : 'Dark mode'}>
               {dark ? (
+                /* Sun icon */
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
               ) : (
+                /* Moon icon */
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
               )}
             </button>
@@ -154,13 +165,13 @@ export default function Navbar() {
             )}
 
             {/* Cart */}
-            <Link to="/cart" className="icon-btn cart-btn" aria-label="Cart" title="My Cart">
+            <Link to="/cart" className="icon-btn cart-btn" aria-label="Cart">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
               {cartCount > 0 && <span className="cart-badge">{cartCount > 99 ? '99+' : cartCount}</span>}
             </Link>
 
             {/* Pre-order cart */}
-            <Link to="/pre-order-cart" className="icon-btn cart-btn preorder-cart-btn" aria-label="Pre-Order Cart" title="Pre-Order Cart">
+            <Link to="/pre-order-cart" className="icon-btn cart-btn preorder-cart-btn" aria-label="Pre-Order Cart">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               {preOrderCount > 0 && <span className="cart-badge preorder-badge">{preOrderCount > 99 ? '99+' : preOrderCount}</span>}
             </Link>
