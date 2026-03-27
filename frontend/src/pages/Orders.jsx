@@ -62,7 +62,7 @@ export default function Orders() {
           </div>
         )}
       </div>
-      <style>{`.orders-list{display:flex;flex-direction:column;gap:16px;}.order-card{display:block;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:24px;transition:var(--transition);}.order-card:hover{border-color:var(--gold);box-shadow:var(--shadow-md);}.order-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}.order-number{font-family:var(--font-display);font-size:20px;color:var(--navy);font-weight:700;}.order-date{font-size:13px;color:var(--text-light);margin-top:4px;}.order-total{font-size:18px;font-weight:700;color:var(--gold);margin-top:8px;}.order-items-preview{display:flex;gap:8px;flex-wrap:wrap;}.order-item-thumb{font-size:12px;background:var(--cream);color:var(--text-mid);padding:4px 10px;border-radius:2px;}`}</style>
+      <style>{`.orders-list{display:flex;flex-direction:column;gap:16px;}.order-card{display:block;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:24px;transition:var(--transition);}.order-card:hover{border-color:var(--gold);box-shadow:var(--shadow-md);}.order-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}.order-number{font-family:var(--font-display);font-size:20px;color:var(--navy);font-weight:700;}.order-date{font-size:13px;color:var(--text-light);margin-top:4px;}.order-total{font-size:18px;font-weight:700;color:var(--gold);margin-top:8px;}.order-items-preview{display:flex;gap:8px;flex-wrap:wrap;}.order-item-thumb{font-size:12px;background:var(--bg-page);color:var(--text-mid);padding:4px 10px;border-radius:2px;}`}</style>
     </div>
   );
 }
