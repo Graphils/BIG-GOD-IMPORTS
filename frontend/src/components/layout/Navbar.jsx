@@ -125,33 +125,30 @@ export default function Navbar() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             </button>
 
-            {/* User — desktop: full dropdown | mobile: "Sign In" text only, rest in hamburger */}
+            {/* User — always visible on all screen sizes */}
             {user ? (
-              <>
-                {/* Desktop user menu */}
-                <div ref={userMenuRef} className="user-menu-wrap desktop-only">
-                  <button className="icon-btn" onClick={() => setUserMenuOpen(s => !s)} aria-label="Account">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  </button>
-                  {userMenuOpen && (
-                    <div className="user-dropdown">
-                      <div className="user-dropdown-header">
-                        <p className="user-dropdown-name">{user.firstName || user.username}</p>
-                        <p className="user-dropdown-email">{user.email}</p>
-                      </div>
-                      <Link to="/profile" onClick={() => setUserMenuOpen(false)}>My Profile</Link>
-                      <Link to="/orders" onClick={() => setUserMenuOpen(false)}>My Orders</Link>
-                      <Link to="/wishlist" onClick={() => setUserMenuOpen(false)}>Wishlist</Link>
-                      {isAdmin && (
-                        <Link to="/admin" onClick={() => setUserMenuOpen(false)} className="admin-link-menu">Admin Panel</Link>
-                      )}
-                      <button onClick={() => { logout(); setUserMenuOpen(false); navigate('/'); }} className="logout-btn">
-                        Sign Out
-                      </button>
+              <div ref={userMenuRef} className="user-menu-wrap">
+                <button className="icon-btn" onClick={() => setUserMenuOpen(s => !s)} aria-label="Account">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
+                {userMenuOpen && (
+                  <div className="user-dropdown">
+                    <div className="user-dropdown-header">
+                      <p className="user-dropdown-name">{user.firstName || user.username}</p>
+                      <p className="user-dropdown-email">{user.email}</p>
                     </div>
-                  )}
-                </div>
-              </>
+                    <Link to="/profile" onClick={() => setUserMenuOpen(false)}>My Profile</Link>
+                    <Link to="/orders" onClick={() => setUserMenuOpen(false)}>My Orders</Link>
+                    <Link to="/wishlist" onClick={() => setUserMenuOpen(false)}>Wishlist</Link>
+                    {isAdmin && (
+                      <Link to="/admin" onClick={() => setUserMenuOpen(false)} className="admin-link-menu">Admin Panel</Link>
+                    )}
+                    <button onClick={() => { logout(); setUserMenuOpen(false); navigate('/'); }} className="logout-btn">
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               /* Sign In button — shows text on all sizes, no wrapping */
               <Link to="/login" className="signin-btn" aria-label="Sign in" onClick={closeAll}>
@@ -160,12 +157,12 @@ export default function Navbar() {
               </Link>
             )}
 
-            {/* Desktop-only cart icons */}
-            <Link to="/cart" className="icon-btn cart-btn desktop-only" aria-label="Cart">
+            {/* Cart icons — always visible */}
+            <Link to="/cart" className="icon-btn cart-btn" aria-label="Cart">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
               {cartCount > 0 && <span className="cart-badge">{cartCount > 99 ? '99+' : cartCount}</span>}
             </Link>
-            <Link to="/pre-order-cart" className="icon-btn cart-btn preorder-cart-btn desktop-only" aria-label="Pre-Order Cart">
+            <Link to="/pre-order-cart" className="icon-btn cart-btn preorder-cart-btn" aria-label="Pre-Order Cart">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               {preOrderCount > 0 && <span className="cart-badge preorder-badge">{preOrderCount > 99 ? '99+' : preOrderCount}</span>}
             </Link>
@@ -217,39 +214,9 @@ export default function Navbar() {
               )}
             </nav>
 
-            <div className="mobile-menu-divider" />
 
-            {/* Cart links in mobile menu */}
-            <div className="mobile-cart-links">
-              <Link to="/cart" onClick={closeAll} className="mobile-cart-link">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                Cart
-                {cartCount > 0 && <span className="mobile-badge">{cartCount > 99 ? '99+' : cartCount}</span>}
-              </Link>
-              <Link to="/pre-order-cart" onClick={closeAll} className="mobile-cart-link preorder-cart-link">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                Pre-Order Cart
-                {preOrderCount > 0 && <span className="mobile-badge preorder-badge">{preOrderCount > 99 ? '99+' : preOrderCount}</span>}
-              </Link>
-            </div>
 
-            {/* User account section in mobile menu */}
-            {user && (
-              <>
-                <div className="mobile-menu-divider" />
-                <div className="mobile-user-section">
-                  <p className="mobile-user-name">{user.firstName || user.username}</p>
-                  <p className="mobile-user-email">{user.email}</p>
-                  <Link to="/profile" onClick={closeAll}>My Profile</Link>
-                  <Link to="/orders" onClick={closeAll}>My Orders</Link>
-                  <Link to="/wishlist" onClick={closeAll}>Wishlist</Link>
-                  {isAdmin && <Link to="/admin" onClick={closeAll} className="admin-link-menu">Admin Panel</Link>}
-                  <button onClick={() => { logout(); closeAll(); navigate('/'); }} className="logout-btn">
-                    Sign Out
-                  </button>
-                </div>
-              </>
-            )}
+
           </div>
         )}
       </header>
