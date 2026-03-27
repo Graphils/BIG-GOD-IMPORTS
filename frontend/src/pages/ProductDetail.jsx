@@ -69,7 +69,7 @@ export default function ProductDetail() {
         }}>
           {/* Images */}
           <div>
-            <div style={{ aspectRatio: '1', background: 'var(--cream)', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: '12px', border: '1px solid var(--border)' }}>
+            <div style={{ aspectRatio: '1', background: 'var(--bg-page)', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: '12px', border: '1px solid var(--border-color)' }}>
               {mainImg
                 ? <img src={mainImg} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -91,7 +91,7 @@ export default function ProductDetail() {
           {/* Info */}
           <div>
             <span className="section-label">{product.category}</span>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 5vw, 44px)', color: 'var(--navy)', margin: '8px 0 14px', lineHeight: 1.2 }}>{product.name}</h1>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 5vw, 44px)', color: 'var(--text-heading)', margin: '8px 0 14px', lineHeight: 1.2 }}>{product.name}</h1>
 
             {product.ratings?.count > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
@@ -101,7 +101,7 @@ export default function ProductDetail() {
             )}
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(24px, 5vw, 32px)', fontWeight: '700', color: 'var(--navy)' }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(24px, 5vw, 32px)', fontWeight: '700', color: 'var(--text-heading)' }}>
                 GHS {product.price.toLocaleString('en-GH', { minimumFractionDigits: 2 })}
               </span>
               {product.comparePrice && (
@@ -159,7 +159,7 @@ export default function ProductDetail() {
               </button>
             </div>
 
-            <div style={{ padding: '16px', background: 'var(--cream)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--text-light)', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            <div style={{ padding: '16px', background: 'var(--bg-page)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--text-light)', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
               <span><svg style={{ verticalAlign: 'middle', marginRight: '5px' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Secure payment</span>
               <span><svg style={{ verticalAlign: 'middle', marginRight: '5px' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Nationwide delivery</span>
               {product.sku && <span>SKU: {product.sku}</span>}
@@ -170,14 +170,14 @@ export default function ProductDetail() {
         {/* Reviews */}
         {reviews.length > 0 && (
           <div style={{ marginTop: '56px' }}>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(24px, 4vw, 32px)', color: 'var(--navy)', marginBottom: '24px' }}>Customer Reviews</h2>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(24px, 4vw, 32px)', color: 'var(--text-heading)', marginBottom: '24px' }}>Customer Reviews</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
               {reviews.map(r => (
-                <div key={r._id} style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '18px' }}>
+                <div key={r._id} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '18px' }}>
                   <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
                     {[1,2,3,4,5].map(s => <span key={s} style={{ color: s <= r.rating ? 'var(--gold)' : '#ddd' }}>★</span>)}
                   </div>
-                  {r.title && <p style={{ fontWeight: '700', color: 'var(--navy)', marginBottom: '6px' }}>{r.title}</p>}
+                  {r.title && <p style={{ fontWeight: '700', color: 'var(--text-heading)', marginBottom: '6px' }}>{r.title}</p>}
                   <p style={{ fontSize: '14px', color: 'var(--text-mid)', lineHeight: '1.7' }}>{r.comment}</p>
                   <p style={{ fontSize: '12px', color: 'var(--text-light)', marginTop: '10px' }}>— {r.user?.username} · {new Date(r.createdAt).toLocaleDateString()}</p>
                 </div>

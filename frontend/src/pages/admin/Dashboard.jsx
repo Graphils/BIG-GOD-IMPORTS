@@ -52,18 +52,18 @@ export default function AdminDashboard() {
         <div className="admin-two-col" style={{ marginBottom: '24px' }}>
           <div className="admin-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--navy)' }}>Recent Orders</h3>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--text-heading)' }}>Recent Orders</h3>
               <Link to="/admin/orders" style={{ fontSize: '13px', color: 'var(--gold)', fontWeight: '600', letterSpacing: '1px', textTransform: 'uppercase' }}>View All</Link>
             </div>
             {stats?.recentOrders?.length > 0 ? stats.recentOrders.map(order => (
-              <div key={order._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+              <div key={order._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--border-color)' }}>
                 <div>
-                  <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--navy)' }}>{order.orderNumber}</p>
+                  <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-heading)' }}>{order.orderNumber}</p>
                   <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>{order.user?.username} · {new Date(order.createdAt).toLocaleDateString('en-GH')}</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', background: STATUS_COLORS[order.status] + '22', color: STATUS_COLORS[order.status] }}>{order.status}</span>
-                  <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginTop: '4px' }}>GHS {order.total?.toFixed(2)}</p>
+                  <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-heading)', marginTop: '4px' }}>GHS {order.total?.toFixed(2)}</p>
                 </div>
               </div>
             )) : <p style={{ color: 'var(--text-light)', fontSize: '14px' }}>No orders yet.</p>}
@@ -71,13 +71,13 @@ export default function AdminDashboard() {
 
           <div className="admin-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--navy)' }}>Low / Out of Stock</h3>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--text-heading)' }}>Low / Out of Stock</h3>
               <Link to="/admin/products" style={{ fontSize: '13px', color: 'var(--gold)', fontWeight: '600', letterSpacing: '1px', textTransform: 'uppercase' }}>Manage</Link>
             </div>
             {stats?.lowStockProducts?.length > 0 ? stats.lowStockProducts.map(p => (
-              <div key={p._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+              <div key={p._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--border-color)' }}>
                 <div>
-                  <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--navy)' }}>{p.name}</p>
+                  <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-heading)' }}>{p.name}</p>
                   <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>{p.category}</p>
                 </div>
                 <span className={`badge ${p.stockStatus === 'out_of_stock' ? 'badge-error' : 'badge-warning'}`}>
@@ -95,7 +95,7 @@ export default function AdminDashboard() {
 
         {/* Quick Actions */}
         <div className="admin-card">
-          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--navy)', marginBottom: '16px' }}>Quick Actions</h3>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--text-heading)', marginBottom: '16px' }}>Quick Actions</h3>
           <div className="admin-quick-actions">
             {[
               { to: '/admin/products', label: 'Add Product', cls: 'btn btn-primary' },

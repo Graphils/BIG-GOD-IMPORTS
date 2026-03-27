@@ -1,105 +1,68 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../utils/api';
-import '../../styles/admin.css';
+import { Link } from 'react-router-dom';
+import api from '../utils/api';
 
-export default function AdminUsers() {
-  const [users, setUsers] = useState([]);
+const STATUS_COLORS = { pending:'badge-warning', confirmed:'badge-navy', processing:'badge-warning', shipped:'badge-navy', delivered:'badge-success', cancelled:'badge-error' };
+
+export default function Orders() {
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [clearing, setClearing] = useState(false);
 
-  useEffect(() => {
-    api.get('/admin/users').then(r => setUsers(r.data.users || [])).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  const fetchOrders = () => {
+    api.get('/orders/my-orders').then(r => setOrders(r.data.orders || [])).catch(() => {}).finally(() => setLoading(false));
+  };
 
-  const filtered = users.filter(u =>
-    u.username?.toLowerCase().includes(search.toLowerCase()) ||
-    u.email?.toLowerCase().includes(search.toLowerCase()) ||
-    u.firstName?.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => { fetchOrders(); }, []);
 
+  const handleClearDelivered = async () => {
+    if (!window.confirm('Remove all delivered orders from your history?')) return;
+    setClearing(true);
+    try {
+      await api.delete('/orders/clear-delivered');
+      fetchOrders();
+    } catch { } finally { setClearing(false); }
+  };
+  if (loading) return <div className="loading-page"><div className="spinner"/></div>;
   return (
-    <div className="admin-page">
-      <div className="admin-header">
-        <div className="container">
-          <span className="section-label">Administration</span>
-          <h1>Customer Management</h1>
-          <p>{users.length} registered customers</p>
+    <div>
+      <div className="page-title">
+        <div className="container" style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'12px'}}>
+          <h1>My Orders</h1>
+          {orders.some(o => o.status === 'delivered') && (
+            <button onClick={handleClearDelivered} disabled={clearing} className="btn btn-outline btn-sm">
+              {clearing ? 'Clearing...' : 'Clear Delivered'}
+            </button>
+          )}
         </div>
       </div>
-
-      <div className="container">
-        <div className="admin-toolbar">
-          <input
-            placeholder="Search by name, username, or email..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{ padding: '10px 16px', border: '1.5px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '14px', background: 'var(--white)' }}
-          />
-        </div>
-
-        {loading ? <div className="loading-page"><div className="spinner" /></div> : filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-light)', background: 'var(--white)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-            <p>No customers found.</p>
-          </div>
+      <div className="container" style={{padding:'48px 24px'}}>
+        {!orders.length ? (
+          <div className="empty-state"><h3>No orders yet</h3><p>You haven't placed any orders.</p><Link to="/shop" className="btn btn-primary">Start Shopping</Link></div>
         ) : (
-          <>
-            {/* Desktop Table */}
-            <div className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
-              <div className="admin-table-wrap order-table">
-                <table>
-                  <thead>
-                    <tr style={{ background: 'var(--navy)' }}>
-                      {['Customer', 'Username', 'Phone', 'Location', 'Joined', 'Status'].map(h => (
-                        <th key={h} style={{ padding: '14px 16px', textAlign: 'left', color: 'var(--gold)', fontSize: '11px', fontWeight: '600', letterSpacing: '1.5px', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((user, i) => (
-                      <tr key={user._id} style={{ borderBottom: '1px solid var(--border)', background: i % 2 === 0 ? 'var(--white)' : 'var(--cream)' }}>
-                        <td style={{ padding: '14px 16px' }}>
-                          <p style={{ fontWeight: '600', color: 'var(--navy)', fontSize: '14px', whiteSpace: 'nowrap' }}>{user.firstName || ''} {user.lastName || ''}</p>
-                          <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>{user.email}</p>
-                        </td>
-                        <td style={{ padding: '14px 16px', fontSize: '14px', color: 'var(--text-mid)', whiteSpace: 'nowrap' }}>@{user.username}</td>
-                        <td style={{ padding: '14px 16px', fontSize: '14px', color: 'var(--text-mid)', whiteSpace: 'nowrap' }}>{user.phone || '—'}</td>
-                        <td style={{ padding: '14px 16px', fontSize: '13px', color: 'var(--text-mid)', whiteSpace: 'nowrap' }}>{user.address?.city ? `${user.address.city}, ${user.address.region}` : '—'}</td>
-                        <td style={{ padding: '14px 16px', fontSize: '13px', color: 'var(--text-light)', whiteSpace: 'nowrap' }}>{new Date(user.createdAt).toLocaleDateString('en-GH')}</td>
-                        <td style={{ padding: '14px 16px' }}>
-                          <span style={{ background: user.isActive ? '#e8f5ee' : '#fdecea', color: user.isActive ? '#1a7a4a' : '#c0392b', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase' }}>
-                            {user.isActive ? 'Active' : 'Suspended'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Mobile Cards */}
-            <div className="order-cards">
-              {filtered.map(user => (
-                <div key={user._id} className="order-card">
-                  <div className="order-card-header">
-                    <div>
-                      <p style={{ fontWeight: '700', color: 'var(--navy)', fontSize: '15px' }}>{user.firstName || ''} {user.lastName || ''}</p>
-                      <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>@{user.username}</p>
-                    </div>
-                    <span style={{ background: user.isActive ? '#e8f5ee' : '#fdecea', color: user.isActive ? '#1a7a4a' : '#c0392b', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', flexShrink: 0 }}>
-                      {user.isActive ? 'Active' : 'Suspended'}
-                    </span>
+          <div className="orders-list">
+            {orders.map(order => (
+              <Link to={`/orders/${order._id}`} key={order._id} className="order-card">
+                <div className="order-card-header">
+                  <div>
+                    <p className="order-number">{order.orderNumber}</p>
+                    <p className="order-date">{new Date(order.createdAt).toLocaleDateString('en-GH',{day:'numeric',month:'long',year:'numeric'})}</p>
                   </div>
-                  <div className="order-card-row"><span>Email</span><span>{user.email}</span></div>
-                  <div className="order-card-row"><span>Phone</span><span>{user.phone || '—'}</span></div>
-                  <div className="order-card-row"><span>Location</span><span>{user.address?.city ? `${user.address.city}, ${user.address.region}` : '—'}</span></div>
-                  <div className="order-card-row"><span>Joined</span><span>{new Date(user.createdAt).toLocaleDateString('en-GH')}</span></div>
+                  <div style={{textAlign:'right'}}>
+                    <span className={`badge ${STATUS_COLORS[order.status] || 'badge-navy'}`}>{order.status.toUpperCase()}</span>
+                    <p className="order-total">GHS {order.total?.toFixed(2)}</p>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </>
+                <div className="order-items-preview">
+                  {order.items?.slice(0,3).map(item => <span key={item._id} className="order-item-thumb">{item.name} ×{item.quantity}</span>)}
+                  {order.items?.length > 3 && <span className="order-item-thumb">+{order.items.length - 3} more</span>}
+                </div>
+              </Link>
+            ))}
+          </div>
         )}
       </div>
+      <style>{`.orders-list{display:flex;flex-direction:column;gap:16px;}.order-card{display:block;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:24px;transition:var(--transition);}.order-card:hover{border-color:var(--gold);box-shadow:var(--shadow-md);}.order-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}.order-number{font-family:var(--font-display);font-size:20px;color:var(--navy);font-weight:700;}.order-date{font-size:13px;color:var(--text-light);margin-top:4px;}.order-total{font-size:18px;font-weight:700;color:var(--gold);margin-top:8px;}.order-items-preview{display:flex;gap:8px;flex-wrap:wrap;}.order-item-thumb{font-size:12px;background:var(--bg-page);color:var(--text-mid);padding:4px 10px;border-radius:2px;}`}</style>
     </div>
   );
 }

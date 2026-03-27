@@ -38,10 +38,10 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
 
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background: 'var(--white)', borderRadius: 'var(--radius-md)', width: '100%', maxWidth: '680px', maxHeight: '90vh', overflow: 'auto', padding: 'clamp(20px, 5vw, 40px)', margin: '16px' }}>
+      <div style={{ background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', width: '100%', maxWidth: '680px', maxHeight: '90vh', overflow: 'auto', padding: 'clamp(20px, 5vw, 40px)', margin: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
           <div>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(20px, 4vw, 26px)', color: 'var(--navy)' }}>{order.orderNumber}</h2>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(20px, 4vw, 26px)', color: 'var(--text-heading)' }}>{order.orderNumber}</h2>
             <p style={{ color: 'var(--text-light)', fontSize: '13px', marginTop: '4px' }}>
               {new Date(order.createdAt).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
@@ -52,15 +52,15 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
         </div>
 
         <div className="admin-two-col" style={{ marginBottom: '20px' }}>
-          <div style={{ background: 'var(--cream)', padding: '14px', borderRadius: 'var(--radius)' }}>
+          <div style={{ background: 'var(--bg-page)', padding: '14px', borderRadius: 'var(--radius)' }}>
             <p style={{ fontSize: '11px', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Customer</p>
-            <p style={{ fontWeight: '600', color: 'var(--navy)' }}>{order.user?.username || 'N/A'}</p>
+            <p style={{ fontWeight: '600', color: 'var(--text-heading)' }}>{order.user?.username || 'N/A'}</p>
             <p style={{ fontSize: '13px', color: 'var(--text-mid)' }}>{order.user?.email}</p>
             <p style={{ fontSize: '13px', color: 'var(--text-mid)' }}>{order.shippingAddress?.phone}</p>
           </div>
-          <div style={{ background: 'var(--cream)', padding: '14px', borderRadius: 'var(--radius)' }}>
+          <div style={{ background: 'var(--bg-page)', padding: '14px', borderRadius: 'var(--radius)' }}>
             <p style={{ fontSize: '11px', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Shipping To</p>
-            <p style={{ fontWeight: '600', color: 'var(--navy)' }}>{order.shippingAddress?.firstName} {order.shippingAddress?.lastName}</p>
+            <p style={{ fontWeight: '600', color: 'var(--text-heading)' }}>{order.shippingAddress?.firstName} {order.shippingAddress?.lastName}</p>
             <p style={{ fontSize: '13px', color: 'var(--text-mid)' }}>{order.shippingAddress?.street}</p>
             <p style={{ fontSize: '13px', color: 'var(--text-mid)' }}>{order.shippingAddress?.city}, {order.shippingAddress?.region}</p>
           </div>
@@ -70,30 +70,30 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
         <div style={{ marginBottom: '20px' }}>
           <p style={{ fontSize: '11px', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Order Items</p>
           {order.items?.map(item => (
-            <div key={item._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border)', gap: '8px' }}>
+            <div key={item._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border-color)', gap: '8px' }}>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center', minWidth: 0 }}>
                 {item.image && <img src={item.image} alt={item.name} style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: 'var(--radius)', flexShrink: 0 }} />}
                 <div style={{ minWidth: 0 }}>
-                  <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--navy)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p>
+                  <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-heading)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p>
                   <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>GHS {item.price?.toFixed(2)} × {item.quantity}</p>
                 </div>
               </div>
-              <p style={{ fontWeight: '700', color: 'var(--navy)', flexShrink: 0 }}>GHS {(item.price * item.quantity).toFixed(2)}</p>
+              <p style={{ fontWeight: '700', color: 'var(--text-heading)', flexShrink: 0 }}>GHS {(item.price * item.quantity).toFixed(2)}</p>
             </div>
           ))}
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)', color: 'var(--text-mid)', fontSize: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border-color)', color: 'var(--text-mid)', fontSize: '14px' }}>
             <span>Shipping</span><span>GHS {order.shippingCost?.toFixed(2)}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', fontWeight: '700', fontSize: '18px', color: 'var(--navy)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', fontWeight: '700', fontSize: '18px', color: 'var(--text-heading)' }}>
             <span>Total</span><span>GHS {order.total?.toFixed(2)}</span>
           </div>
         </div>
 
         {/* Payment info */}
-        <div style={{ marginBottom: '20px', padding: '14px', background: 'var(--cream)', borderRadius: 'var(--radius)', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+        <div style={{ marginBottom: '20px', padding: '14px', background: 'var(--bg-page)', borderRadius: 'var(--radius)', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
           <div>
             <p style={{ fontSize: '11px', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '1px' }}>Payment</p>
-            <p style={{ fontWeight: '600', color: 'var(--navy)', textTransform: 'capitalize' }}>{order.paymentMethod?.replace('_', ' ')}</p>
+            <p style={{ fontWeight: '600', color: 'var(--text-heading)', textTransform: 'capitalize' }}>{order.paymentMethod?.replace('_', ' ')}</p>
           </div>
           <div>
             <p style={{ fontSize: '11px', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '1px' }}>Status</p>
@@ -102,18 +102,18 @@ function OrderDetailModal({ order, onClose, onUpdate }) {
         </div>
 
         {/* Status Update */}
-        <div style={{ background: 'var(--cream)', padding: '16px', borderRadius: 'var(--radius)', marginBottom: '16px' }}>
-          <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--navy)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Update Order Status</p>
+        <div style={{ background: 'var(--bg-page)', padding: '16px', borderRadius: 'var(--radius)', marginBottom: '16px' }}>
+          <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-heading)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Update Order Status</p>
           <p style={{ fontSize: '12px', color: 'var(--text-light)', marginBottom: '12px' }}>Customer will be notified by email.</p>
           <div className="form-group" style={{ marginBottom: '10px' }}>
             <label>New Status</label>
-            <select value={newStatus} onChange={e => setNewStatus(e.target.value)} style={{ background: 'var(--white)' }}>
+            <select value={newStatus} onChange={e => setNewStatus(e.target.value)} style={{ background: 'var(--bg-card)' }}>
               {ORDER_STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
             </select>
           </div>
           <div className="form-group" style={{ marginBottom: '10px' }}>
             <label>Delivery Fee (GHS)</label>
-            <input type="number" min="0" step="0.01" value={shippingCost} onChange={e => setShippingCost(e.target.value)} placeholder="e.g. 20.00" style={{ background: 'var(--white)' }} />
+            <input type="number" min="0" step="0.01" value={shippingCost} onChange={e => setShippingCost(e.target.value)} placeholder="e.g. 20.00" style={{ background: 'var(--bg-card)' }} />
           </div>
           <div className="form-group" style={{ marginBottom: '14px' }}>
             <label>Internal Note (optional)</label>
@@ -192,7 +192,7 @@ export default function AdminOrders() {
         </div>
 
         {loading ? <div className="loading-page"><div className="spinner" /></div> : orders.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-light)', background: 'var(--white)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+          <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-light)', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
             <p>No orders found.</p>
           </div>
         ) : (
@@ -210,14 +210,14 @@ export default function AdminOrders() {
                   </thead>
                   <tbody>
                     {orders.map((order, i) => (
-                      <tr key={order._id} style={{ borderBottom: '1px solid var(--border)', background: i % 2 === 0 ? 'var(--white)' : 'var(--cream)', cursor: 'pointer' }} onClick={() => setSelectedOrder(order)}>
-                        <td style={{ padding: '14px 16px', fontWeight: '700', color: 'var(--navy)', fontSize: '14px', whiteSpace: 'nowrap' }}>{order.orderNumber}</td>
+                      <tr key={order._id} style={{ borderBottom: '1px solid var(--border-color)', background: i % 2 === 0 ? 'var(--white)' : 'var(--cream)', cursor: 'pointer' }} onClick={() => setSelectedOrder(order)}>
+                        <td style={{ padding: '14px 16px', fontWeight: '700', color: 'var(--text-heading)', fontSize: '14px', whiteSpace: 'nowrap' }}>{order.orderNumber}</td>
                         <td style={{ padding: '14px 16px' }}>
-                          <p style={{ fontSize: '14px', color: 'var(--navy)', fontWeight: '500', whiteSpace: 'nowrap' }}>{order.user?.username}</p>
+                          <p style={{ fontSize: '14px', color: 'var(--text-heading)', fontWeight: '500', whiteSpace: 'nowrap' }}>{order.user?.username}</p>
                           <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>{order.user?.email}</p>
                         </td>
                         <td style={{ padding: '14px 16px', fontSize: '14px', color: 'var(--text-mid)', whiteSpace: 'nowrap' }}>{order.items?.length} item{order.items?.length !== 1 ? 's' : ''}</td>
-                        <td style={{ padding: '14px 16px', fontWeight: '700', color: 'var(--navy)', fontSize: '14px', whiteSpace: 'nowrap' }}>GHS {order.total?.toFixed(2)}</td>
+                        <td style={{ padding: '14px 16px', fontWeight: '700', color: 'var(--text-heading)', fontSize: '14px', whiteSpace: 'nowrap' }}>GHS {order.total?.toFixed(2)}</td>
                         <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
                           <span style={{ fontSize: '12px', fontWeight: '600', color: order.paymentStatus === 'paid' ? 'var(--success)' : 'var(--error)', textTransform: 'uppercase' }}>{order.paymentStatus}</span>
                         </td>
@@ -240,12 +240,12 @@ export default function AdminOrders() {
               {orders.map(order => (
                 <div key={order._id} className="order-card" onClick={() => setSelectedOrder(order)} style={{ cursor: 'pointer' }}>
                   <div className="order-card-header">
-                    <p style={{ fontWeight: '700', color: 'var(--navy)', fontSize: '15px' }}>{order.orderNumber}</p>
+                    <p style={{ fontWeight: '700', color: 'var(--text-heading)', fontSize: '15px' }}>{order.orderNumber}</p>
                     <span style={{ ...STATUS_STYLES[order.status], padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase' }}>{order.status}</span>
                   </div>
                   <div className="order-card-row"><span>Customer</span><span style={{ fontWeight: '500' }}>{order.user?.username}</span></div>
                   <div className="order-card-row"><span>Items</span><span>{order.items?.length} item{order.items?.length !== 1 ? 's' : ''}</span></div>
-                  <div className="order-card-row"><span>Total</span><span style={{ fontWeight: '700', color: 'var(--navy)' }}>GHS {order.total?.toFixed(2)}</span></div>
+                  <div className="order-card-row"><span>Total</span><span style={{ fontWeight: '700', color: 'var(--text-heading)' }}>GHS {order.total?.toFixed(2)}</span></div>
                   <div className="order-card-row"><span>Payment</span><span style={{ color: order.paymentStatus === 'paid' ? 'var(--success)' : 'var(--error)', fontWeight: '600', textTransform: 'uppercase' }}>{order.paymentStatus}</span></div>
                   <div className="order-card-row" style={{ border: 'none' }}><span>Date</span><span>{new Date(order.createdAt).toLocaleDateString('en-GH')}</span></div>
                 </div>

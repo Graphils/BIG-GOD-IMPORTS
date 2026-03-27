@@ -37,8 +37,8 @@ function FeesTab({ title, fetchUrl, saveUrl, color = 'var(--navy)', note }) {
       )}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
         {REGIONS.map(region => (
-          <div key={region} style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-            <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--navy)', flex: 1 }}>{region}</span>
+          <div key={region} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+            <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-heading)', flex: 1 }}>{region}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ fontSize: '13px', color: 'var(--text-light)' }}>GHS</span>
               <input

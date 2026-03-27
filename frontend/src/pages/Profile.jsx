@@ -32,10 +32,10 @@ export default function Profile() {
     <div>
       <div className="page-title"><div className="container"><h1>My Profile</h1></div></div>
       <div className="container" style={{padding:'48px 24px',maxWidth:'680px'}}>
-        <div style={{background:'var(--white)',border:'1px solid var(--border)',borderRadius:'var(--radius-md)',padding:'40px'}}>
-          <div style={{marginBottom:'32px',paddingBottom:'24px',borderBottom:'1px solid var(--border)'}}>
+        <div style={{background:'var(--bg-card)',border:'1px solid var(--border-color)',borderRadius:'var(--radius-md)',padding:'40px'}}>
+          <div style={{marginBottom:'32px',paddingBottom:'24px',borderBottom:'1px solid var(--border-color)'}}>
             <p style={{fontSize:'12px',fontWeight:'700',letterSpacing:'2px',textTransform:'uppercase',color:'var(--text-light)',marginBottom:'6px'}}>Account</p>
-            <p style={{fontFamily:'var(--font-display)',fontSize:'22px',color:'var(--navy)'}}>{user?.username}</p>
+            <p style={{fontFamily:'var(--font-display)',fontSize:'22px',color:'var(--text-heading)'}}>{user?.username}</p>
             <p style={{color:'var(--text-light)',fontSize:'14px'}}>{user?.email}</p>
           </div>
           <form onSubmit={handleSubmit}>
@@ -44,7 +44,7 @@ export default function Profile() {
               <div className="form-group"><label>Last Name</label><input name="lastName" value={form.lastName} onChange={handleChange}/></div>
             </div>
             <div className="form-group"><label>Phone Number</label><input name="phone" type="tel" value={form.phone} onChange={handleChange}/></div>
-            <h4 style={{marginBottom:'16px',marginTop:'8px',color:'var(--navy)',fontSize:'16px'}}>Delivery Address</h4>
+            <h4 style={{marginBottom:'16px',marginTop:'8px',color:'var(--text-heading)',fontSize:'16px'}}>Delivery Address</h4>
             <div className="form-group"><label>Street Address</label><input name="address.street" value={form.address.street} onChange={handleChange}/></div>
             <div className="form-row">
               <div className="form-group"><label>City</label><input name="address.city" value={form.address.city} onChange={handleChange}/></div>
@@ -52,7 +52,7 @@ export default function Profile() {
             </div>
             <button type="submit" className="btn btn-primary" disabled={loading}>{loading?'Saving...':'Save Changes'}</button>
           </form>
-          <div style={{marginTop:'32px',paddingTop:'24px',borderTop:'1px solid var(--border)'}}>
+          <div style={{marginTop:'32px',paddingTop:'24px',borderTop:'1px solid var(--border-color)'}}>
             <p style={{fontSize:'13px',fontWeight:'700',letterSpacing:'1px',textTransform:'uppercase',color:'var(--error)',marginBottom:'8px'}}>Danger Zone</p>
             <p style={{fontSize:'13px',color:'var(--text-light)',marginBottom:'16px'}}>Permanently delete your account and all your data. This cannot be undone.</p>
             <button onClick={handleDeleteAccount} disabled={deleting} style={{background:'none',border:'1.5px solid var(--error)',color:'var(--error)',padding:'10px 20px',borderRadius:'var(--radius)',fontSize:'13px',fontWeight:'600',cursor:'pointer'}}>

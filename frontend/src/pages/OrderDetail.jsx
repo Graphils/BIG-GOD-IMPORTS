@@ -20,8 +20,8 @@ export default function OrderDetail() {
       <div className="page-title"><div className="container"><div className="breadcrumb"><Link to="/orders">My Orders</Link><span>/</span><span>{order.orderNumber}</span></div><h1>Order {order.orderNumber}</h1></div></div>
       <div className="container" style={{padding:'48px 24px',maxWidth:'900px'}}>
         {order.status !== 'cancelled' && (
-          <div style={{background:'var(--white)',border:'1px solid var(--border)',borderRadius:'var(--radius-md)',padding:'32px',marginBottom:'32px'}}>
-            <h3 style={{marginBottom:'24px',color:'var(--navy)'}}>Order Progress</h3>
+          <div style={{background:'var(--bg-card)',border:'1px solid var(--border-color)',borderRadius:'var(--radius-md)',padding:'32px',marginBottom:'32px'}}>
+            <h3 style={{marginBottom:'24px',color:'var(--text-heading)'}}>Order Progress</h3>
             <div style={{display:'flex',justifyContent:'space-between',position:'relative'}}>
               <div style={{position:'absolute',top:'16px',left:'0',right:'0',height:'2px',background:'var(--border)',zIndex:0}}/>
               <div style={{position:'absolute',top:'16px',left:'0',height:'2px',background:'var(--gold)',zIndex:1,width:`${Math.max(0,(stepIdx/(STATUS_STEPS.length-1))*100)}%`,transition:'width 0.5s'}}/>
@@ -35,30 +35,30 @@ export default function OrderDetail() {
           </div>
         )}
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'24px',marginBottom:'24px'}}>
-          <div style={{background:'var(--white)',border:'1px solid var(--border)',borderRadius:'var(--radius-md)',padding:'24px'}}>
-            <h4 style={{marginBottom:'16px',color:'var(--navy)'}}>Order Details</h4>
+          <div style={{background:'var(--bg-card)',border:'1px solid var(--border-color)',borderRadius:'var(--radius-md)',padding:'24px'}}>
+            <h4 style={{marginBottom:'16px',color:'var(--text-heading)'}}>Order Details</h4>
             <p><strong>Status:</strong> <span className={`badge ${STATUS_COLORS[order.status]}`}>{order.status.toUpperCase()}</span></p>
             <p style={{marginTop:'8px'}}><strong>Payment:</strong> {order.paymentMethod?.replace('_',' ').toUpperCase()}</p>
             <p style={{marginTop:'8px'}}><strong>Payment Status:</strong> {order.paymentStatus?.toUpperCase()}</p>
             <p style={{marginTop:'8px'}}><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString('en-GH',{day:'numeric',month:'long',year:'numeric'})}</p>
           </div>
-          <div style={{background:'var(--white)',border:'1px solid var(--border)',borderRadius:'var(--radius-md)',padding:'24px'}}>
-            <h4 style={{marginBottom:'16px',color:'var(--navy)'}}>Shipping Address</h4>
+          <div style={{background:'var(--bg-card)',border:'1px solid var(--border-color)',borderRadius:'var(--radius-md)',padding:'24px'}}>
+            <h4 style={{marginBottom:'16px',color:'var(--text-heading)'}}>Shipping Address</h4>
             <p>{order.shippingAddress?.firstName} {order.shippingAddress?.lastName}</p>
             <p style={{color:'var(--text-light)'}}>{order.shippingAddress?.phone}</p>
             <p style={{color:'var(--text-light)'}}>{order.shippingAddress?.street}</p>
             <p style={{color:'var(--text-light)'}}>{order.shippingAddress?.city}, {order.shippingAddress?.region}</p>
           </div>
         </div>
-        <div style={{background:'var(--white)',border:'1px solid var(--border)',borderRadius:'var(--radius-md)',padding:'24px'}}>
-          <h4 style={{marginBottom:'20px',color:'var(--navy)'}}>Items Ordered</h4>
+        <div style={{background:'var(--bg-card)',border:'1px solid var(--border-color)',borderRadius:'var(--radius-md)',padding:'24px'}}>
+          <h4 style={{marginBottom:'20px',color:'var(--text-heading)'}}>Items Ordered</h4>
           {order.items?.map(item => (
-            <div key={item._id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 0',borderBottom:'1px solid var(--border)'}}>
+            <div key={item._id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 0',borderBottom:'1px solid var(--border-color)'}}>
               <div style={{display:'flex',gap:'16px',alignItems:'center'}}>
                 {item.image && <img src={item.image} alt={item.name} style={{width:'56px',height:'56px',objectFit:'cover',borderRadius:'4px'}}/>}
-                <div><p style={{fontWeight:'600',color:'var(--navy)'}}>{item.name}</p><p style={{fontSize:'13px',color:'var(--text-light)'}}>Qty: {item.quantity}</p></div>
+                <div><p style={{fontWeight:'600',color:'var(--text-heading)'}}>{item.name}</p><p style={{fontSize:'13px',color:'var(--text-light)'}}>Qty: {item.quantity}</p></div>
               </div>
-              <span style={{fontWeight:'700',color:'var(--navy)'}}>GHS {(item.price*item.quantity).toFixed(2)}</span>
+              <span style={{fontWeight:'700',color:'var(--text-heading)'}}>GHS {(item.price*item.quantity).toFixed(2)}</span>
             </div>
           ))}
           <div style={{marginTop:'16px',display:'flex',flexDirection:'column',gap:'8px',alignItems:'flex-end'}}>
