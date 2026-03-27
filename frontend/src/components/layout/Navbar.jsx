@@ -76,17 +76,7 @@ export default function Navbar() {
 
           {/* LOGO — round */}
           <Link to="/" className="navbar-logo">
-            <img
-              src="/logo.jpg"
-              alt="Big-God Imports"
-              style={{
-                height: '52px',
-                width: '52px',
-                objectFit: 'cover',
-                borderRadius: '50%',
-                border: '2px solid var(--gold)',
-              }}
-            />
+            <img src="/logo.jpg" alt="Big-God Imports" />
           </Link>
 
           {/* NAV LINKS */}
